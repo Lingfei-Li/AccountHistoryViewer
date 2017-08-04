@@ -80,7 +80,7 @@ var putTransaction = function(t) {
 app.post('/', function(req, res) {
     if(!req.body.type || !req.body.description || !req.body.amount) {
         res.status(400);
-        res.send('The input does not have all the requried fields.');
+        res.send('The input does not have all the requried fieltypeds.');
         return;
     }
 
