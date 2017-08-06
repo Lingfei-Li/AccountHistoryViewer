@@ -9,15 +9,19 @@ const dynamodb = new AWS.DynamoDB.DocumentClient();
 
 exports.create = (event, context, callback) => {
     const requestBody = JSON.parse(event.body);
-    const type = requestBody.type;
-    const description = requestBody.description;
 
+    const history = {
+        id: uuid.v1(),
+        type: requestBody.type,
+        description: requestBody.description,
+        amount: requestBody.amount
+    };
 
     submitHistoryPromise(history).then(res => {
         const response = {
             statusCode: 200,
             body: JSON.stringify({
-                message: 'sucessfully added history',
+                message: 'successfully added history',
                 id: res.id,
             }),
         };
@@ -34,14 +38,36 @@ exports.create = (event, context, callback) => {
     });
 };
 
+exports.list = (event, context, callback) => {
+    const params = {
+        TableName: process.env.HISTORY_TABLE,
+        ProjectionExpression: 'id, #typ, amount, description, transaction_date, create_date',
+        ExpressionAttributeNames: {
+            '#typ': 'type'
+        }
+    };
+    const onScan = (err, data) => {
+        if(err) {
+            callback(err);
+        }
+        else {
+            const response = {
+                statusCode: 200,
+                body: JSON.stringify({
+                    history: data.Items
+                }),
+            };
+            return callback(null, response);
+        }
+    };
+    dynamodb.scan(params, onScan);
+};
 
 const submitHistoryPromise = history => {
     console.log('adding history');
-    const historyData = JSON.stringify({
-        id: uuid.v1(),
-        type: history.type,
-        description: history.description,
-        amount: history.amount
-    });
-    dynamodb.put(historyData).promise().then(res => historyData);
+    const historyData = {
+        TableName: process.env.HISTORY_TABLE,
+        Item: history
+    };
+    return dynamodb.put(historyData).promise().then(res => historyData);
 };
