@@ -53,6 +53,9 @@ exports.list = (event, context, callback) => {
         else {
             const response = {
                 statusCode: 200,
+                headers: {
+                    'Access-Control-Allow-Origin': '*'
+                },
                 body: JSON.stringify({
                     history: data.Items
                 }),

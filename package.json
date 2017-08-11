@@ -10,6 +10,7 @@
   "license": "ISC",
   "dependencies": {
     "aws-sdk": "latest",
+    "axios": "^0.16.2",
     "bluebird": "latest",
     "body-parser": "latest",
     "express": "latest",
