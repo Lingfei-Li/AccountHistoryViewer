@@ -5,32 +5,111 @@
     <title>Title</title>
 </head>
 
+<link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/canvasjs/1.7.0/canvasjs.js"></script>
+
 <script src="https://unpkg.com/vue"></script>
+
+<script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.18.1/moment.js"></script>
 
 
 <body>
 
-<div id="app">
-    {{ message }}
+<div class="container">
+    <div id="chartContainer" style="height: 300px; width: 100%;"></div>
 </div>
+
+<div id="app" class="container" style="background: grey;">
+    <div v-for="h in history" class="row well">
+        <div>
+            {{ h.transaction_datetime.format('MMM D, YYYY') }}
+        </div>
+        <div>
+            {{ h.description }}
+        </div>
+        <div>
+            {{ h.type }}
+        </div>
+        <div>
+            {{ h.amount }}
+        </div>
+    </div>
+</div>
+
+
+
 
 </body>
 
-<script src="https://unpkg.com/axios/dist/axios.min.js"></script>
 <script>
     var app = new Vue({
         el: '#app',
         data: {
-            message: 'Hello Vue!'
+            message: 'Hello Vue!',
+            history: [{amount: 100}, {amount: 200}]
         }
          ,
          mounted() {
              axios.get("https://a7996ss0v9.execute-api.us-west-2.amazonaws.com/dev/history")
                  .then(response => {
-                     this.message = response.data.history[0].amount;
+                     this.history = response.data.history;
+                     this.history.sort((a, b) => {
+                         return b.transaction_date - a.transaction_date;
+                     });
+                     this.history = this.history.map(h => {
+                         h.transaction_datetime = toDateTime(parseInt(h.transaction_date));
+                         return h;
+                     });
+                     this.history.sort((a, b) => {
+                         return a.transaction_date - b.transaction_date;
+                     });
+                     this.balance_history = makeBalanceHistory(this.history);
+
+                     let chart = new CanvasJS.Chart("chartContainer", {
+                         title:{
+                             text: "Total Balance Trend"
+                         },
+                         axisX: {
+                             valueFormatString: "MMM",
+                             interval:1,
+                             intervalType: "month"
+                         },
+                         data: [
+                             {
+                                 // Change type to "doughnut", "line", "splineArea", etc.
+                                 type: "line",
+                                 dataPoints: this.balance_history
+                             }
+                         ]
+                     });
+                     chart.render();
                  });
          }
     });
+
+    function makeBalanceHistory(history) {
+        if(history.length <= 0) return [];
+        let cur_bal = 0.0;
+        let cur_datetime = history[0].transaction_datetime;
+        let balance_history = [];
+        history.forEach(h => {
+            if(!h.transaction_datetime.isSame(cur_datetime)) {
+                balance_history.push({x: cur_datetime, y: cur_bal});
+                cur_datetime = h.transaction_datetime;
+            }
+            cur_bal += parseFloat(h.amount.replace('−', '-'));
+        });
+        balance_history.push({x: cur_datetime, y: cur_bal});
+        return balance_history;
+    }
+
+    function toDateTime(sec) {
+        let t = moment.unix(sec);
+        return t;
+    }
 </script>
 
 </html>
