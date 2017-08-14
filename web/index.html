@@ -28,6 +28,12 @@
             {{ h.transaction_datetime.format('MMM D, YYYY') }}
         </div>
         <div>
+            {{ h.bank }}
+        </div>
+        <div>
+            {{ h.account }}
+        </div>
+        <div>
             {{ h.description }}
         </div>
         <div>
@@ -55,18 +61,20 @@
          mounted() {
              axios.get("https://a7996ss0v9.execute-api.us-west-2.amazonaws.com/dev/history")
                  .then(response => {
+                     console.log(response.data.history);
                      this.history = response.data.history;
                      this.history.sort((a, b) => {
-                         return b.transaction_date - a.transaction_date;
+                         return b.transaction_date_sec - a.transaction_date_sec;
                      });
                      this.history = this.history.map(h => {
-                         h.transaction_datetime = toDateTime(parseInt(h.transaction_date));
+                         h.transaction_datetime = toDateTime(parseInt(h.transaction_date_sec));
                          return h;
                      });
                      this.history.sort((a, b) => {
-                         return a.transaction_date - b.transaction_date;
+                         return a.transaction_date_sec - b.transaction_date_sec;
                      });
                      this.balance_history = makeBalanceHistory(this.history);
+                     console.log(this.balance_history);
 
                      let chart = new CanvasJS.Chart("chartContainer", {
                          title:{
@@ -79,8 +87,8 @@
                          },
                          data: [
                              {
-                                 // Change type to "doughnut", "line", "splineArea", etc.
                                  type: "line",
+                                 toolTipContent: "{bank}",
                                  dataPoints: this.balance_history
                              }
                          ]
@@ -95,20 +103,20 @@
         let cur_bal = 0.0;
         let cur_datetime = history[0].transaction_datetime;
         let balance_history = [];
+        let history_dict = {};
         history.forEach(h => {
             if(!h.transaction_datetime.isSame(cur_datetime)) {
-                balance_history.push({x: cur_datetime, y: cur_bal});
+                balance_history.push({x: cur_datetime.toDate(), y: cur_bal, bank: h.bank, account: h.account});
                 cur_datetime = h.transaction_datetime;
             }
             cur_bal += parseFloat(h.amount.replace('−', '-'));
         });
-        balance_history.push({x: cur_datetime, y: cur_bal});
+        balance_history.push({x: cur_datetime.toDate(), y: cur_bal, bank: history.bank, account: history.account});
         return balance_history;
     }
 
     function toDateTime(sec) {
-        let t = moment.unix(sec);
-        return t;
+        return moment.unix(sec);
     }
 </script>
 

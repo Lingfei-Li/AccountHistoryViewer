@@ -41,9 +41,10 @@ exports.create = (event, context, callback) => {
 exports.list = (event, context, callback) => {
     const params = {
         TableName: process.env.HISTORY_TABLE,
-        ProjectionExpression: 'id, #typ, amount, description, transaction_date, create_date',
+        ProjectionExpression: 'id, bank, #acct, #typ, amount, description, transaction_date_sec, create_date_sec',
         ExpressionAttributeNames: {
-            '#typ': 'type'
+            '#typ': 'type',
+            '#acct': 'account'
         }
     };
     const onScan = (err, data) => {
