@@ -155,7 +155,7 @@
                 "S3Bucket": {
                   "Ref": "ServerlessDeploymentBucket"
                 },
-                "S3Key": "serverless/account-history-service/dev/1503383965127-2017-08-22T06:39:25.127Z/account-history-service.zip"
+                "S3Key": "serverless/account-history-service/dev/1504160878746-2017-08-31T06:27:58.746Z/account-history-service.zip"
               },
               "FunctionName": "account-history-service-dev-historyCreation",
               "Handler": "api/history.create",
@@ -180,14 +180,14 @@
               "IamRoleLambdaExecution"
             ]
           },
-          "HistoryCreationLambdaVersionDYqWp8G0tznqQGzTjixGrmxFIc63gDXVXI7csOJGY": {
+          "HistoryCreationLambdaVersionNV5hQMQXeevcuRa5tXxsVSgGjwhedwU8Ltv5TAYrn8": {
             "Type": "AWS::Lambda::Version",
             "DeletionPolicy": "Retain",
             "Properties": {
               "FunctionName": {
                 "Ref": "HistoryCreationLambdaFunction"
               },
-              "CodeSha256": "DYqWp8G0tznq+QGzT+jixGrmxFIc63gDXVXI7csOJGY=",
+              "CodeSha256": "NV5hQMQXeevcuRa5tXxsVSgGjwhedwU8Ltv/5TAYrn8=",
               "Description": "Add a new account history"
             }
           },
@@ -198,7 +198,7 @@
                 "S3Bucket": {
                   "Ref": "ServerlessDeploymentBucket"
                 },
-                "S3Key": "serverless/account-history-service/dev/1503383965127-2017-08-22T06:39:25.127Z/account-history-service.zip"
+                "S3Key": "serverless/account-history-service/dev/1504160878746-2017-08-31T06:27:58.746Z/account-history-service.zip"
               },
               "FunctionName": "account-history-service-dev-listHistory",
               "Handler": "api/history.list",
@@ -223,14 +223,14 @@
               "IamRoleLambdaExecution"
             ]
           },
-          "ListHistoryLambdaVersionDYqWp8G0tznqQGzTjixGrmxFIc63gDXVXI7csOJGY": {
+          "ListHistoryLambdaVersionNV5hQMQXeevcuRa5tXxsVSgGjwhedwU8Ltv5TAYrn8": {
             "Type": "AWS::Lambda::Version",
             "DeletionPolicy": "Retain",
             "Properties": {
               "FunctionName": {
                 "Ref": "ListHistoryLambdaFunction"
               },
-              "CodeSha256": "DYqWp8G0tznq+QGzT+jixGrmxFIc63gDXVXI7csOJGY=",
+              "CodeSha256": "NV5hQMQXeevcuRa5tXxsVSgGjwhedwU8Ltv/5TAYrn8=",
               "Description": "List all histories"
             }
           },
@@ -241,7 +241,7 @@
                 "S3Bucket": {
                   "Ref": "ServerlessDeploymentBucket"
                 },
-                "S3Key": "serverless/account-history-service/dev/1503383965127-2017-08-22T06:39:25.127Z/account-history-service.zip"
+                "S3Key": "serverless/account-history-service/dev/1504160878746-2017-08-31T06:27:58.746Z/account-history-service.zip"
               },
               "FunctionName": "account-history-service-dev-listHistoryBetweenDates",
               "Handler": "api/history.listBetweenDates",
@@ -266,14 +266,14 @@
               "IamRoleLambdaExecution"
             ]
           },
-          "ListHistoryBetweenDatesLambdaVersionDYqWp8G0tznqQGzTjixGrmxFIc63gDXVXI7csOJGY": {
+          "ListHistoryBetweenDatesLambdaVersionNV5hQMQXeevcuRa5tXxsVSgGjwhedwU8Ltv5TAYrn8": {
             "Type": "AWS::Lambda::Version",
             "DeletionPolicy": "Retain",
             "Properties": {
               "FunctionName": {
                 "Ref": "ListHistoryBetweenDatesLambdaFunction"
               },
-              "CodeSha256": "DYqWp8G0tznq+QGzT+jixGrmxFIc63gDXVXI7csOJGY=",
+              "CodeSha256": "NV5hQMQXeevcuRa5tXxsVSgGjwhedwU8Ltv/5TAYrn8=",
               "Description": "List histories within specified date range"
             }
           },
@@ -298,25 +298,25 @@
               }
             }
           },
-          "ApiGatewayResourceHistoryStarttimestampstrVar": {
+          "ApiGatewayResourceHistoryStartdatesecstrVar": {
             "Type": "AWS::ApiGateway::Resource",
             "Properties": {
               "ParentId": {
                 "Ref": "ApiGatewayResourceHistory"
               },
-              "PathPart": "{startTimestampStr}",
+              "PathPart": "{startDateSecStr}",
               "RestApiId": {
                 "Ref": "ApiGatewayRestApi"
               }
             }
           },
-          "ApiGatewayResourceHistoryStarttimestampstrVarEndtimestampstrVar": {
+          "ApiGatewayResourceHistoryStartdatesecstrVarEnddatesecstrVar": {
             "Type": "AWS::ApiGateway::Resource",
             "Properties": {
               "ParentId": {
-                "Ref": "ApiGatewayResourceHistoryStarttimestampstrVar"
+                "Ref": "ApiGatewayResourceHistoryStartdatesecstrVar"
               },
-              "PathPart": "{endTimestampStr}",
+              "PathPart": "{endDateSecStr}",
               "RestApiId": {
                 "Ref": "ApiGatewayRestApi"
               }
@@ -398,13 +398,13 @@
               "MethodResponses": []
             }
           },
-          "ApiGatewayMethodHistoryStarttimestampstrVarEndtimestampstrVarGet": {
+          "ApiGatewayMethodHistoryStartdatesecstrVarEnddatesecstrVarGet": {
             "Type": "AWS::ApiGateway::Method",
             "Properties": {
               "HttpMethod": "GET",
               "RequestParameters": {},
               "ResourceId": {
-                "Ref": "ApiGatewayResourceHistoryStarttimestampstrVarEndtimestampstrVar"
+                "Ref": "ApiGatewayResourceHistoryStartdatesecstrVarEnddatesecstrVar"
               },
               "RestApiId": {
                 "Ref": "ApiGatewayRestApi"
@@ -436,7 +436,7 @@
               "MethodResponses": []
             }
           },
-          "ApiGatewayDeployment1503383965263": {
+          "ApiGatewayDeployment1504160878878": {
             "Type": "AWS::ApiGateway::Deployment",
             "Properties": {
               "RestApiId": {
@@ -447,7 +447,7 @@
             "DependsOn": [
               "ApiGatewayMethodHistoryPost",
               "ApiGatewayMethodHistoryGet",
-              "ApiGatewayMethodHistoryStarttimestampstrVarEndtimestampstrVarGet"
+              "ApiGatewayMethodHistoryStartdatesecstrVarEnddatesecstrVarGet"
             ]
           },
           "HistoryCreationLambdaPermissionApiGateway": {
@@ -548,32 +548,6 @@
                 ]
               }
             }
-          },
-          "HistoryDynamoDbTable": {
-            "Type": "AWS::DynamoDB::Table",
-            "DeletionPolicy": "Retain",
-            "Properties": {
-              "AttributeDefinitions": [
-                {
-                  "AttributeName": "id",
-                  "AttributeType": "S"
-                }
-              ],
-              "KeySchema": [
-                {
-                  "AttributeName": "id",
-                  "KeyType": "HASH"
-                }
-              ],
-              "ProvisionedThroughput": {
-                "ReadCapacityUnits": 1,
-                "WriteCapacityUnits": 1
-              },
-              "StreamSpecification": {
-                "StreamViewType": "NEW_AND_OLD_IMAGES"
-              },
-              "TableName": "account-history-service"
-            }
           }
         },
         "Outputs": {
@@ -585,19 +559,19 @@
           "HistoryCreationLambdaFunctionQualifiedArn": {
             "Description": "Current Lambda function version",
             "Value": {
-              "Ref": "HistoryCreationLambdaVersionDYqWp8G0tznqQGzTjixGrmxFIc63gDXVXI7csOJGY"
+              "Ref": "HistoryCreationLambdaVersionNV5hQMQXeevcuRa5tXxsVSgGjwhedwU8Ltv5TAYrn8"
             }
           },
           "ListHistoryLambdaFunctionQualifiedArn": {
             "Description": "Current Lambda function version",
             "Value": {
-              "Ref": "ListHistoryLambdaVersionDYqWp8G0tznqQGzTjixGrmxFIc63gDXVXI7csOJGY"
+              "Ref": "ListHistoryLambdaVersionNV5hQMQXeevcuRa5tXxsVSgGjwhedwU8Ltv5TAYrn8"
             }
           },
           "ListHistoryBetweenDatesLambdaFunctionQualifiedArn": {
             "Description": "Current Lambda function version",
             "Value": {
-              "Ref": "ListHistoryBetweenDatesLambdaVersionDYqWp8G0tznqQGzTjixGrmxFIc63gDXVXI7csOJGY"
+              "Ref": "ListHistoryBetweenDatesLambdaVersionNV5hQMQXeevcuRa5tXxsVSgGjwhedwU8Ltv5TAYrn8"
             }
           },
           "ServiceEndpoint": {
@@ -677,7 +651,7 @@
         "events": [
           {
             "http": {
-              "path": "history/{startTimestampStr}/{endTimestampStr}",
+              "path": "history/{startDateSecStr}/{endDateSecStr}",
               "method": "get",
               "integration": "AWS_PROXY"
             }
@@ -688,41 +662,10 @@
         "vpc": {}
       }
     },
-    "resources": {
-      "Resources": {
-        "HistoryDynamoDbTable": {
-          "Type": "AWS::DynamoDB::Table",
-          "DeletionPolicy": "Retain",
-          "Properties": {
-            "AttributeDefinitions": [
-              {
-                "AttributeName": "id",
-                "AttributeType": "S"
-              }
-            ],
-            "KeySchema": [
-              {
-                "AttributeName": "id",
-                "KeyType": "HASH"
-              }
-            ],
-            "ProvisionedThroughput": {
-              "ReadCapacityUnits": 1,
-              "WriteCapacityUnits": 1
-            },
-            "StreamSpecification": {
-              "StreamViewType": "NEW_AND_OLD_IMAGES"
-            },
-            "TableName": "account-history-service"
-          }
-        }
-      },
-      "Outputs": {}
-    },
     "artifact": "C:\\Users\\yyin4\\WebstormProjects\\AccountHistoryViewer\\.serverless\\account-history-service.zip"
   },
   "package": {
-    "artifactDirectoryName": "serverless/account-history-service/dev/1503383965127-2017-08-22T06:39:25.127Z",
+    "artifactDirectoryName": "serverless/account-history-service/dev/1504160878746-2017-08-31T06:27:58.746Z",
     "artifact": "account-history-service.zip"
   }
 }

@@ -72,7 +72,7 @@ functions:
     description: List histories within specified date range
     events:
       - http:
-          path: history/{startTimestampStr}/{endTimestampStr}
+          path: history/{startDateSecStr}/{endDateSecStr}
           method: get
 
 #    The following are a few example events you can configure
@@ -108,26 +108,50 @@ functions:
 #      variable2: value2
 
 # you can add CloudFormation resource templates here
-resources:
-  Resources:
-    HistoryDynamoDbTable:
-      Type: 'AWS::DynamoDB::Table'
-      DeletionPolicy: Retain
-      Properties:
-        AttributeDefinitions:
-          -
-            AttributeName: "id"
-            AttributeType: "S"
-        KeySchema:
-          -
-            AttributeName: "id"
-            KeyType: "HASH"
-        ProvisionedThroughput:
-          ReadCapacityUnits: 1
-          WriteCapacityUnits: 1
-        StreamSpecification:
-          StreamViewType: "NEW_AND_OLD_IMAGES"
-        TableName: ${self:provider.environment.HISTORY_TABLE}
+#resources:
+#  Resources:
+#    HistoryDynamoDbTable:
+#      Type: 'AWS::DynamoDB::Table'
+#      DeletionPolicy: Retain
+#      Properties:
+#        AttributeDefinitions:
+#          -
+#            AttributeName: "id"
+#            AttributeType: "S"
+#        KeySchema:
+#          -
+#            AttributeName: "id"
+#            KeyType: "HASH"
+#        ProvisionedThroughput:
+#          ReadCapacityUnits: 5
+#          WriteCapacityUnits: 5
+#        StreamSpecification:
+#          StreamViewType: "NEW_AND_OLD_IMAGES"
+#        TableName: ${self:provider.environment.HISTORY_TABLE}
+#    LastTransactionDateDynamoDbTable:
+#      Type: 'AWS::DynamoDB::Table'
+#      DeletionPolicy: Retain
+#      Properties:
+#        AttributeDefinitions:
+#          -
+#            AttributeName: "bank"
+#            AttributeType: "S"
+#          -
+#            AttributeName: "sequenceNumber"
+#            AttributeType: "S"
+#        KeySchema:
+#          -
+#            AttributeName: "bank"
+#            KeyType: "HASH"
+#          -
+#            AttributeName: "sequenceNumber"
+#            KeyType: "RANGE"
+#        ProvisionedThroughput:
+#          ReadCapacityUnits: 5
+#          WriteCapacityUnits: 5
+#        StreamSpecification:
+#          StreamViewType: "NEW_AND_OLD_IMAGES"
+#        TableName: ${self:provider.environment.HISTORY_TABLE}
 #resources:
 #  Resources:
 #    NewResource:

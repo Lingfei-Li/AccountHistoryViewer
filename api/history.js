@@ -71,10 +71,8 @@ exports.list = (event, context, callback) => {
 
 exports.listBetweenDates = (event, context, callback) => {
     console.log(event);
-    const startDateStr = event.path.startTimestampStr;
-    const endDateStr = event.path.endTimestampStr;
-    const startDateSec = moment(startDateStr).format("M/D/YYYY").unix();
-    const endDateSec = moment(endDateStr).format("M/D/YYYY").unix();
+    const startDateSec = parseInt(event.path.startDateSecStr);
+    const endDateSec = parseInt(event.path.endDateSecStr);
 
     const params = {
         TableName: process.env.HISTORY_TABLE,
