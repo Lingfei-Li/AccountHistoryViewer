@@ -2,6 +2,7 @@
 
 const uuid = require('uuid');
 const AWS = require('aws-sdk');
+const moment = require('moment');
 
 AWS.config.setPromisesDependency(require('bluebird'));
 
@@ -38,6 +39,7 @@ exports.create = (event, context, callback) => {
     });
 };
 
+
 exports.list = (event, context, callback) => {
     const params = {
         TableName: process.env.HISTORY_TABLE,
@@ -45,6 +47,46 @@ exports.list = (event, context, callback) => {
         ExpressionAttributeNames: {
             '#typ': 'type',
             '#acct': 'account'
+        }
+    };
+    const onScan = (err, data) => {
+        if(err) {
+            callback(err);
+        }
+        else {
+            const response = {
+                statusCode: 200,
+                headers: {
+                    'Access-Control-Allow-Origin': '*'
+                },
+                body: JSON.stringify({
+                    history: data.Items
+                }),
+            };
+            return callback(null, response);
+        }
+    };
+    dynamodb.scan(params, onScan);
+};
+
+exports.listBetweenDates = (event, context, callback) => {
+    console.log(event);
+    const startDateStr = event.path.startTimestampStr;
+    const endDateStr = event.path.endTimestampStr;
+    const startDateSec = moment(startDateStr).format("M/D/YYYY").unix();
+    const endDateSec = moment(endDateStr).format("M/D/YYYY").unix();
+
+    const params = {
+        TableName: process.env.HISTORY_TABLE,
+        ProjectionExpression: 'id, bank, #acct, #typ, amount, description, transaction_date_sec, create_date_sec',
+        FilterAttributeRanges: "transaction_date_sec between :start_date_sec and :end_date_sec",
+        ExpressionAttributeNames: {
+            '#typ': 'type',
+            '#acct': 'account'
+        },
+        ExpressionAttributeValues: {
+            ':start_date_sec': startDateSec,
+            ':end_date_sec': endDateSec,
         }
     };
     const onScan = (err, data) => {

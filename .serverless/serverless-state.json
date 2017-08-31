@@ -46,6 +46,12 @@
               "LogGroupName": "/aws/lambda/account-history-service-dev-listHistory"
             }
           },
+          "ListHistoryBetweenDatesLogGroup": {
+            "Type": "AWS::Logs::LogGroup",
+            "Properties": {
+              "LogGroupName": "/aws/lambda/account-history-service-dev-listHistoryBetweenDates"
+            }
+          },
           "IamRoleLambdaExecution": {
             "Type": "AWS::IAM::Role",
             "Properties": {
@@ -91,6 +97,9 @@
                           },
                           {
                             "Fn::Sub": "arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/account-history-service-dev-listHistory:*"
+                          },
+                          {
+                            "Fn::Sub": "arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/account-history-service-dev-listHistoryBetweenDates:*"
                           }
                         ]
                       },
@@ -105,6 +114,9 @@
                           },
                           {
                             "Fn::Sub": "arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/account-history-service-dev-listHistory:*:*"
+                          },
+                          {
+                            "Fn::Sub": "arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/account-history-service-dev-listHistoryBetweenDates:*:*"
                           }
                         ]
                       },
@@ -143,7 +155,7 @@
                 "S3Bucket": {
                   "Ref": "ServerlessDeploymentBucket"
                 },
-                "S3Key": "serverless/account-history-service/dev/1502693301737-2017-08-14T06:48:21.737Z/account-history-service.zip"
+                "S3Key": "serverless/account-history-service/dev/1503383965127-2017-08-22T06:39:25.127Z/account-history-service.zip"
               },
               "FunctionName": "account-history-service-dev-historyCreation",
               "Handler": "api/history.create",
@@ -168,14 +180,14 @@
               "IamRoleLambdaExecution"
             ]
           },
-          "HistoryCreationLambdaVersionkqsjOQZA2Fxlrf24HAm53e3DuwQWrjCfApuD3pm7JU": {
+          "HistoryCreationLambdaVersionDYqWp8G0tznqQGzTjixGrmxFIc63gDXVXI7csOJGY": {
             "Type": "AWS::Lambda::Version",
             "DeletionPolicy": "Retain",
             "Properties": {
               "FunctionName": {
                 "Ref": "HistoryCreationLambdaFunction"
               },
-              "CodeSha256": "kqsjOQZ/A2Fxlrf24HAm53e3DuwQWrjCfApuD3pm7JU=",
+              "CodeSha256": "DYqWp8G0tznq+QGzT+jixGrmxFIc63gDXVXI7csOJGY=",
               "Description": "Add a new account history"
             }
           },
@@ -186,7 +198,7 @@
                 "S3Bucket": {
                   "Ref": "ServerlessDeploymentBucket"
                 },
-                "S3Key": "serverless/account-history-service/dev/1502693301737-2017-08-14T06:48:21.737Z/account-history-service.zip"
+                "S3Key": "serverless/account-history-service/dev/1503383965127-2017-08-22T06:39:25.127Z/account-history-service.zip"
               },
               "FunctionName": "account-history-service-dev-listHistory",
               "Handler": "api/history.list",
@@ -211,15 +223,58 @@
               "IamRoleLambdaExecution"
             ]
           },
-          "ListHistoryLambdaVersionkqsjOQZA2Fxlrf24HAm53e3DuwQWrjCfApuD3pm7JU": {
+          "ListHistoryLambdaVersionDYqWp8G0tznqQGzTjixGrmxFIc63gDXVXI7csOJGY": {
             "Type": "AWS::Lambda::Version",
             "DeletionPolicy": "Retain",
             "Properties": {
               "FunctionName": {
                 "Ref": "ListHistoryLambdaFunction"
               },
-              "CodeSha256": "kqsjOQZ/A2Fxlrf24HAm53e3DuwQWrjCfApuD3pm7JU=",
+              "CodeSha256": "DYqWp8G0tznq+QGzT+jixGrmxFIc63gDXVXI7csOJGY=",
               "Description": "List all histories"
+            }
+          },
+          "ListHistoryBetweenDatesLambdaFunction": {
+            "Type": "AWS::Lambda::Function",
+            "Properties": {
+              "Code": {
+                "S3Bucket": {
+                  "Ref": "ServerlessDeploymentBucket"
+                },
+                "S3Key": "serverless/account-history-service/dev/1503383965127-2017-08-22T06:39:25.127Z/account-history-service.zip"
+              },
+              "FunctionName": "account-history-service-dev-listHistoryBetweenDates",
+              "Handler": "api/history.listBetweenDates",
+              "MemorySize": 128,
+              "Role": {
+                "Fn::GetAtt": [
+                  "IamRoleLambdaExecution",
+                  "Arn"
+                ]
+              },
+              "Runtime": "nodejs6.10",
+              "Timeout": 6,
+              "Description": "List histories within specified date range",
+              "Environment": {
+                "Variables": {
+                  "HISTORY_TABLE": "account-history-service"
+                }
+              }
+            },
+            "DependsOn": [
+              "ListHistoryBetweenDatesLogGroup",
+              "IamRoleLambdaExecution"
+            ]
+          },
+          "ListHistoryBetweenDatesLambdaVersionDYqWp8G0tznqQGzTjixGrmxFIc63gDXVXI7csOJGY": {
+            "Type": "AWS::Lambda::Version",
+            "DeletionPolicy": "Retain",
+            "Properties": {
+              "FunctionName": {
+                "Ref": "ListHistoryBetweenDatesLambdaFunction"
+              },
+              "CodeSha256": "DYqWp8G0tznq+QGzT+jixGrmxFIc63gDXVXI7csOJGY=",
+              "Description": "List histories within specified date range"
             }
           },
           "ApiGatewayRestApi": {
@@ -238,6 +293,30 @@
                 ]
               },
               "PathPart": "history",
+              "RestApiId": {
+                "Ref": "ApiGatewayRestApi"
+              }
+            }
+          },
+          "ApiGatewayResourceHistoryStarttimestampstrVar": {
+            "Type": "AWS::ApiGateway::Resource",
+            "Properties": {
+              "ParentId": {
+                "Ref": "ApiGatewayResourceHistory"
+              },
+              "PathPart": "{startTimestampStr}",
+              "RestApiId": {
+                "Ref": "ApiGatewayRestApi"
+              }
+            }
+          },
+          "ApiGatewayResourceHistoryStarttimestampstrVarEndtimestampstrVar": {
+            "Type": "AWS::ApiGateway::Resource",
+            "Properties": {
+              "ParentId": {
+                "Ref": "ApiGatewayResourceHistoryStarttimestampstrVar"
+              },
+              "PathPart": "{endTimestampStr}",
               "RestApiId": {
                 "Ref": "ApiGatewayRestApi"
               }
@@ -319,7 +398,45 @@
               "MethodResponses": []
             }
           },
-          "ApiGatewayDeployment1502693301828": {
+          "ApiGatewayMethodHistoryStarttimestampstrVarEndtimestampstrVarGet": {
+            "Type": "AWS::ApiGateway::Method",
+            "Properties": {
+              "HttpMethod": "GET",
+              "RequestParameters": {},
+              "ResourceId": {
+                "Ref": "ApiGatewayResourceHistoryStarttimestampstrVarEndtimestampstrVar"
+              },
+              "RestApiId": {
+                "Ref": "ApiGatewayRestApi"
+              },
+              "AuthorizationType": "NONE",
+              "Integration": {
+                "IntegrationHttpMethod": "POST",
+                "Type": "AWS_PROXY",
+                "Uri": {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "arn:aws:apigateway:",
+                      {
+                        "Ref": "AWS::Region"
+                      },
+                      ":lambda:path/2015-03-31/functions/",
+                      {
+                        "Fn::GetAtt": [
+                          "ListHistoryBetweenDatesLambdaFunction",
+                          "Arn"
+                        ]
+                      },
+                      "/invocations"
+                    ]
+                  ]
+                }
+              },
+              "MethodResponses": []
+            }
+          },
+          "ApiGatewayDeployment1503383965263": {
             "Type": "AWS::ApiGateway::Deployment",
             "Properties": {
               "RestApiId": {
@@ -329,7 +446,8 @@
             },
             "DependsOn": [
               "ApiGatewayMethodHistoryPost",
-              "ApiGatewayMethodHistoryGet"
+              "ApiGatewayMethodHistoryGet",
+              "ApiGatewayMethodHistoryStarttimestampstrVarEndtimestampstrVarGet"
             ]
           },
           "HistoryCreationLambdaPermissionApiGateway": {
@@ -398,6 +516,39 @@
               }
             }
           },
+          "ListHistoryBetweenDatesLambdaPermissionApiGateway": {
+            "Type": "AWS::Lambda::Permission",
+            "Properties": {
+              "FunctionName": {
+                "Fn::GetAtt": [
+                  "ListHistoryBetweenDatesLambdaFunction",
+                  "Arn"
+                ]
+              },
+              "Action": "lambda:InvokeFunction",
+              "Principal": "apigateway.amazonaws.com",
+              "SourceArn": {
+                "Fn::Join": [
+                  "",
+                  [
+                    "arn:aws:execute-api:",
+                    {
+                      "Ref": "AWS::Region"
+                    },
+                    ":",
+                    {
+                      "Ref": "AWS::AccountId"
+                    },
+                    ":",
+                    {
+                      "Ref": "ApiGatewayRestApi"
+                    },
+                    "/*/*"
+                  ]
+                ]
+              }
+            }
+          },
           "HistoryDynamoDbTable": {
             "Type": "AWS::DynamoDB::Table",
             "DeletionPolicy": "Retain",
@@ -434,13 +585,19 @@
           "HistoryCreationLambdaFunctionQualifiedArn": {
             "Description": "Current Lambda function version",
             "Value": {
-              "Ref": "HistoryCreationLambdaVersionkqsjOQZA2Fxlrf24HAm53e3DuwQWrjCfApuD3pm7JU"
+              "Ref": "HistoryCreationLambdaVersionDYqWp8G0tznqQGzTjixGrmxFIc63gDXVXI7csOJGY"
             }
           },
           "ListHistoryLambdaFunctionQualifiedArn": {
             "Description": "Current Lambda function version",
             "Value": {
-              "Ref": "ListHistoryLambdaVersionkqsjOQZA2Fxlrf24HAm53e3DuwQWrjCfApuD3pm7JU"
+              "Ref": "ListHistoryLambdaVersionDYqWp8G0tznqQGzTjixGrmxFIc63gDXVXI7csOJGY"
+            }
+          },
+          "ListHistoryBetweenDatesLambdaFunctionQualifiedArn": {
+            "Description": "Current Lambda function version",
+            "Value": {
+              "Ref": "ListHistoryBetweenDatesLambdaVersionDYqWp8G0tznqQGzTjixGrmxFIc63gDXVXI7csOJGY"
             }
           },
           "ServiceEndpoint": {
@@ -512,6 +669,23 @@
         "name": "account-history-service-dev-listHistory",
         "package": {},
         "vpc": {}
+      },
+      "listHistoryBetweenDates": {
+        "handler": "api/history.listBetweenDates",
+        "memorySize": 128,
+        "description": "List histories within specified date range",
+        "events": [
+          {
+            "http": {
+              "path": "history/{startTimestampStr}/{endTimestampStr}",
+              "method": "get",
+              "integration": "AWS_PROXY"
+            }
+          }
+        ],
+        "name": "account-history-service-dev-listHistoryBetweenDates",
+        "package": {},
+        "vpc": {}
       }
     },
     "resources": {
@@ -548,7 +722,7 @@
     "artifact": "C:\\Users\\yyin4\\WebstormProjects\\AccountHistoryViewer\\.serverless\\account-history-service.zip"
   },
   "package": {
-    "artifactDirectoryName": "serverless/account-history-service/dev/1502693301737-2017-08-14T06:48:21.737Z",
+    "artifactDirectoryName": "serverless/account-history-service/dev/1503383965127-2017-08-22T06:39:25.127Z",
     "artifact": "account-history-service.zip"
   }
 }

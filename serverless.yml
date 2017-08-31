@@ -66,6 +66,14 @@ functions:
       - http:
           path: history
           method: get
+  listHistoryBetweenDates:
+    handler: api/history.listBetweenDates
+    memorySize: 128
+    description: List histories within specified date range
+    events:
+      - http:
+          path: history/{startTimestampStr}/{endTimestampStr}
+          method: get
 
 #    The following are a few example events you can configure
 #    NOTE: Please make sure to change your handler code to work with those events
