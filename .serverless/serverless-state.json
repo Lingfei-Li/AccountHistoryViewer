@@ -155,7 +155,7 @@
                 "S3Bucket": {
                   "Ref": "ServerlessDeploymentBucket"
                 },
-                "S3Key": "serverless/account-history-service/dev/1504160878746-2017-08-31T06:27:58.746Z/account-history-service.zip"
+                "S3Key": "serverless/account-history-service/dev/1504244967313-2017-09-01T05:49:27.313Z/account-history-service.zip"
               },
               "FunctionName": "account-history-service-dev-historyCreation",
               "Handler": "api/history.create",
@@ -180,14 +180,14 @@
               "IamRoleLambdaExecution"
             ]
           },
-          "HistoryCreationLambdaVersionNV5hQMQXeevcuRa5tXxsVSgGjwhedwU8Ltv5TAYrn8": {
+          "HistoryCreationLambdaVersionEjDGSsyXRwVBwu231Xsgr20nU0g2UAgFCDDdKuHIc": {
             "Type": "AWS::Lambda::Version",
             "DeletionPolicy": "Retain",
             "Properties": {
               "FunctionName": {
                 "Ref": "HistoryCreationLambdaFunction"
               },
-              "CodeSha256": "NV5hQMQXeevcuRa5tXxsVSgGjwhedwU8Ltv/5TAYrn8=",
+              "CodeSha256": "Ej+DGSsyXRwVBwu231Xsgr20nU0g2UA/gFCDDdKuHIc=",
               "Description": "Add a new account history"
             }
           },
@@ -198,7 +198,7 @@
                 "S3Bucket": {
                   "Ref": "ServerlessDeploymentBucket"
                 },
-                "S3Key": "serverless/account-history-service/dev/1504160878746-2017-08-31T06:27:58.746Z/account-history-service.zip"
+                "S3Key": "serverless/account-history-service/dev/1504244967313-2017-09-01T05:49:27.313Z/account-history-service.zip"
               },
               "FunctionName": "account-history-service-dev-listHistory",
               "Handler": "api/history.list",
@@ -223,14 +223,14 @@
               "IamRoleLambdaExecution"
             ]
           },
-          "ListHistoryLambdaVersionNV5hQMQXeevcuRa5tXxsVSgGjwhedwU8Ltv5TAYrn8": {
+          "ListHistoryLambdaVersionEjDGSsyXRwVBwu231Xsgr20nU0g2UAgFCDDdKuHIc": {
             "Type": "AWS::Lambda::Version",
             "DeletionPolicy": "Retain",
             "Properties": {
               "FunctionName": {
                 "Ref": "ListHistoryLambdaFunction"
               },
-              "CodeSha256": "NV5hQMQXeevcuRa5tXxsVSgGjwhedwU8Ltv/5TAYrn8=",
+              "CodeSha256": "Ej+DGSsyXRwVBwu231Xsgr20nU0g2UA/gFCDDdKuHIc=",
               "Description": "List all histories"
             }
           },
@@ -241,7 +241,7 @@
                 "S3Bucket": {
                   "Ref": "ServerlessDeploymentBucket"
                 },
-                "S3Key": "serverless/account-history-service/dev/1504160878746-2017-08-31T06:27:58.746Z/account-history-service.zip"
+                "S3Key": "serverless/account-history-service/dev/1504244967313-2017-09-01T05:49:27.313Z/account-history-service.zip"
               },
               "FunctionName": "account-history-service-dev-listHistoryBetweenDates",
               "Handler": "api/history.listBetweenDates",
@@ -266,14 +266,14 @@
               "IamRoleLambdaExecution"
             ]
           },
-          "ListHistoryBetweenDatesLambdaVersionNV5hQMQXeevcuRa5tXxsVSgGjwhedwU8Ltv5TAYrn8": {
+          "ListHistoryBetweenDatesLambdaVersionEjDGSsyXRwVBwu231Xsgr20nU0g2UAgFCDDdKuHIc": {
             "Type": "AWS::Lambda::Version",
             "DeletionPolicy": "Retain",
             "Properties": {
               "FunctionName": {
                 "Ref": "ListHistoryBetweenDatesLambdaFunction"
               },
-              "CodeSha256": "NV5hQMQXeevcuRa5tXxsVSgGjwhedwU8Ltv/5TAYrn8=",
+              "CodeSha256": "Ej+DGSsyXRwVBwu231Xsgr20nU0g2UA/gFCDDdKuHIc=",
               "Description": "List histories within specified date range"
             }
           },
@@ -436,7 +436,7 @@
               "MethodResponses": []
             }
           },
-          "ApiGatewayDeployment1504160878878": {
+          "ApiGatewayDeployment1504244967454": {
             "Type": "AWS::ApiGateway::Deployment",
             "Properties": {
               "RestApiId": {
@@ -559,19 +559,19 @@
           "HistoryCreationLambdaFunctionQualifiedArn": {
             "Description": "Current Lambda function version",
             "Value": {
-              "Ref": "HistoryCreationLambdaVersionNV5hQMQXeevcuRa5tXxsVSgGjwhedwU8Ltv5TAYrn8"
+              "Ref": "HistoryCreationLambdaVersionEjDGSsyXRwVBwu231Xsgr20nU0g2UAgFCDDdKuHIc"
             }
           },
           "ListHistoryLambdaFunctionQualifiedArn": {
             "Description": "Current Lambda function version",
             "Value": {
-              "Ref": "ListHistoryLambdaVersionNV5hQMQXeevcuRa5tXxsVSgGjwhedwU8Ltv5TAYrn8"
+              "Ref": "ListHistoryLambdaVersionEjDGSsyXRwVBwu231Xsgr20nU0g2UAgFCDDdKuHIc"
             }
           },
           "ListHistoryBetweenDatesLambdaFunctionQualifiedArn": {
             "Description": "Current Lambda function version",
             "Value": {
-              "Ref": "ListHistoryBetweenDatesLambdaVersionNV5hQMQXeevcuRa5tXxsVSgGjwhedwU8Ltv5TAYrn8"
+              "Ref": "ListHistoryBetweenDatesLambdaVersionEjDGSsyXRwVBwu231Xsgr20nU0g2UAgFCDDdKuHIc"
             }
           },
           "ServiceEndpoint": {
@@ -665,7 +665,7 @@
     "artifact": "C:\\Users\\yyin4\\WebstormProjects\\AccountHistoryViewer\\.serverless\\account-history-service.zip"
   },
   "package": {
-    "artifactDirectoryName": "serverless/account-history-service/dev/1504160878746-2017-08-31T06:27:58.746Z",
+    "artifactDirectoryName": "serverless/account-history-service/dev/1504244967313-2017-09-01T05:49:27.313Z",
     "artifact": "account-history-service.zip"
   }
 }

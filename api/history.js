@@ -71,13 +71,25 @@ exports.list = (event, context, callback) => {
 
 exports.listBetweenDates = (event, context, callback) => {
     console.log(event);
-    const startDateSec = parseInt(event.path.startDateSecStr);
-    const endDateSec = parseInt(event.path.endDateSecStr);
+    const startDateSec = parseInt(event.pathParameters.startDateSecStr);
+    const endDateSec = parseInt(event.pathParameters.endDateSecStr);
+    if(isNaN(startDateSec) || isNaN(endDateSec)) {
+        const response = {
+            statusCode: 400,
+            headers: {
+                'Access-Control-Allow-Origin': '*'
+            },
+            body: JSON.stringify({
+                message: "Path parameters missing or they cannot be converted to integer"
+            }),
+        };
+        return callback(null, response);
+    }
 
     const params = {
         TableName: process.env.HISTORY_TABLE,
         ProjectionExpression: 'id, bank, #acct, #typ, amount, description, transaction_date_sec, create_date_sec',
-        FilterAttributeRanges: "transaction_date_sec between :start_date_sec and :end_date_sec",
+        FilterExpression: "transaction_date_sec between :start_date_sec and :end_date_sec",
         ExpressionAttributeNames: {
             '#typ': 'type',
             '#acct': 'account'
