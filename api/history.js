@@ -71,8 +71,11 @@ exports.list = (event, context, callback) => {
 
 exports.listBetweenDates = (event, context, callback) => {
     console.log(event);
-    const startDateSec = parseInt(event.pathParameters.startDateSecStr);
-    const endDateSec = parseInt(event.pathParameters.endDateSecStr);
+    let startDateSec = parseInt(event.pathParameters.startDateSecStr);
+    let endDateSec = parseInt(event.pathParameters.endDateSecStr);
+    if(endDateSec <= startDateSec) {
+        endDateSec = moment().unix();
+    }
     if(isNaN(startDateSec) || isNaN(endDateSec)) {
         const response = {
             statusCode: 400,
