@@ -8,38 +8,6 @@ AWS.config.setPromisesDependency(require('bluebird'));
 
 const dynamodb = new AWS.DynamoDB.DocumentClient();
 
-exports.create = (event, context, callback) => {
-    const requestBody = JSON.parse(event.body);
-
-    const history = {
-        id: uuid.v1(),
-        type: requestBody.type,
-        description: requestBody.description,
-        amount: requestBody.amount
-    };
-
-    submitHistoryPromise(history).then(res => {
-        const response = {
-            statusCode: 200,
-            body: JSON.stringify({
-                message: 'successfully added history',
-                id: res.id,
-            }),
-        };
-        callback(null, response);
-    }).catch(err => {
-        console.error(err);
-        const response = {
-            statusCode: 500,
-            body: JSON.stringify({
-                message: 'failed to add'
-            }),
-        };
-        callback(null, response);
-    });
-};
-
-
 exports.list = (event, context, callback) => {
     const params = {
         TableName: process.env.HISTORY_TABLE,
@@ -51,7 +19,16 @@ exports.list = (event, context, callback) => {
     };
     const onScan = (err, data) => {
         if(err) {
-            callback(err);
+            const response = {
+                statusCode: 500,
+                headers: {
+                    'Access-Control-Allow-Origin': '*'
+                },
+                body: JSON.stringify({
+                    error: err
+                }),
+            };
+            return callback(null, response);
         }
         else {
             const response = {
@@ -104,7 +81,17 @@ exports.listBetweenDates = (event, context, callback) => {
     };
     const onScan = (err, data) => {
         if(err) {
-            callback(err);
+            const response = {
+                statusCode: 400,
+                headers: {
+                    'Access-Control-Allow-Origin': '*'
+                },
+                body: JSON.stringify({
+                    message: "Path parameters missing or they cannot be converted to integer",
+                    error: err
+                }),
+            };
+            return callback(null, response);
         }
         else {
             const response = {
