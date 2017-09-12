@@ -2,7 +2,7 @@
   <div id="navbar">
       <nav class="navbar navbar-default">
           <div class="navbar-header">
-            <a class="navbar-brand" href="#">{{ siteName }}</a>
+          <img src="../assets/navbarImg.jpg" class="navbarImg"/>
           </div>
       </nav>
   </div>

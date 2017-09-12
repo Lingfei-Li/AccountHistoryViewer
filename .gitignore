@@ -1,4 +1,5 @@
 .idea/*
+.idea/
 asdnode_modules/
 .DS_Store
 dist/

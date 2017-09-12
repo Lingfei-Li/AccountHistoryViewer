@@ -1,7 +1,7 @@
 <template>
     <div id="app">
         <navbar></navbar>
-        <img src="http://az616578.vo.msecnd.net/files/2016/10/08/63611544510437076964939708_636016045463548403-1141137312_635935160236280609575526844_lottery-winner-money-stock-today-tease-160108_bf238d3c03a7005a50a6d6274d46083f.jpg">
+        <bannerImg></bannerImg>
         <chart></chart>
     </div>
 </template>
@@ -52,8 +52,12 @@ a {
     color: #42b983;
 }
 
-img {
-    height: 300px;
+.banner{
+    width: 300px;
+}
 
+.navbarImg {
+    height: 50px;
+    width: 50px;
 }
 </style>
