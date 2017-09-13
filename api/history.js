@@ -109,6 +109,20 @@ exports.listBetweenDates = (event, context, callback) => {
     dynamodb.scan(params, onScan);
 };
 
+exports.calculateBalance = (event, context, callback) => {
+    const response = {
+        statusCode: 200,
+        headers: {
+            'Access-Control-Allow-Origin': '*'
+        },
+        body: JSON.stringify({
+            'message': 'To be implemented'
+        }),
+    };
+    return callback(null, response);
+};
+
+
 const submitHistoryPromise = history => {
     console.log('adding history');
     const historyData = {

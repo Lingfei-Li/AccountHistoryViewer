@@ -3,6 +3,7 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/.idea/AccountHistoryViewer.iml" filepath="$PROJECT_DIR$/.idea/AccountHistoryViewer.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/ProjectErebor.iml" filepath="$PROJECT_DIR$/.idea/ProjectErebor.iml" />
     </modules>
   </component>
 </project>
