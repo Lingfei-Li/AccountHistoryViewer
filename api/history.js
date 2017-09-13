@@ -110,16 +110,19 @@ exports.listBetweenDates = (event, context, callback) => {
 };
 
 exports.calculateBalance = (event, context, callback) => {
-    const response = {
-        statusCode: 200,
-        headers: {
-            'Access-Control-Allow-Origin': '*'
-        },
-        body: JSON.stringify({
-            'message': 'To be implemented'
-        }),
-    };
-    return callback(null, response);
+    event.Records.forEach((record) => {
+        console.log('Stream record: ', JSON.stringify(record, null, 2));
+
+        if (record.eventName === 'INSERT') {
+            let id = JSON.stringify(record.dynamodb.NewImage.id.S);
+            let amount = JSON.stringify(record.dynamodb.NewImage.amount.N);
+            let date = JSON.stringify(record.dynamodb.NewImage.transaction_date_sec.N);
+            console.log(id);
+            console.log(amount);
+            console.log(date);
+        }
+    });
+    callback(null, `Successfully processed ${event.Records.length} records.`);
 };
 
 

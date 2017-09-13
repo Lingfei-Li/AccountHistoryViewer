@@ -1,6 +1,4 @@
 .idea/
-.idea/*
-.idea/modules.xml
 .DS_Store
 dist/
 npm-debug.log
