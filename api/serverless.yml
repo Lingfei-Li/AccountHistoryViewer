@@ -7,7 +7,8 @@ provider:
   stage: dev
   region: us-west-2
   environment:
-    HISTORY_TABLE: ${self:service}
+    HISTORY_TABLE: account-history-service
+    BALANCE_TABLE: account-balance
   iamRoleStatements:
     - Effect: Allow
       Action:
@@ -43,10 +44,10 @@ functions:
           path: history/{startDateSecStr}/{endDateSecStr}
           method: get
           cors: true
-  calculateBalance:
-    handler: history.calculateBalance
+  calculateDailyBalance:
+    handler: history.calculateDailyBalance
     memorySize: 256
-    description: Calculate the account balance for the given transaction consumed from the stream
+    description: Calculate the daily account balance for the given transaction consumed from the stream
     events:
       - stream:
           type: dynamodb
