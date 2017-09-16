@@ -6,4 +6,6 @@ selenium-debug.log
 /web/node_modules/
 /api/node_modules/
 /api/.serverless/
-/web/src/config.js
+config*
+*.db
+/debug.log
