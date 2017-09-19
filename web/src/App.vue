@@ -1,20 +1,19 @@
 <template>
     <div id="app">
         <navbar></navbar>
-        <bannerImg></bannerImg>
-        <chart></chart>
+        <history-root></history-root>
     </div>
 </template>
 
 <script>
 import navbar from './components/Navbar.vue';
-import chart from './components/Chart.vue';
+import historyRoot from './components/HistoryRoot.vue';
 
 export default {
     name: 'app',
     components: {
         navbar,
-        chart
+        historyRoot
     },
     data () {
         return {
