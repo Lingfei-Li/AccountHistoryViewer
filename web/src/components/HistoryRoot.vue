@@ -33,8 +33,8 @@ export default {
     },
     data () {
         return {
-            transactionData: ["123", "asd"],
-            balanceData: [123, 3456]
+            transactionData: [],
+            balanceData: []
         }
     },
     methods: {
