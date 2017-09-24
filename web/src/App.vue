@@ -1,7 +1,8 @@
 <template>
     <div id="app">
-        <navbar></navbar>
-        <history-root></history-root>
+        <!--<navbar></navbar>-->
+        <!--<history-root></history-root>-->
+        <router-view></router-view>
     </div>
 </template>
 
@@ -11,15 +12,15 @@ import historyRoot from './components/HistoryRoot.vue';
 
 export default {
     name: 'app',
-    components: {
-        navbar,
-        historyRoot
-    },
-    data () {
-        return {
-          msg: 'Welcome to Your Vue.js App'
-        }
-    }
+//    components: {
+//        navbar,
+//        historyRoot
+//    },
+//    data () {
+//        return {
+//          msg: 'Welcome to Your Vue.js App'
+//        }
+//    }
 }
 </script>
 

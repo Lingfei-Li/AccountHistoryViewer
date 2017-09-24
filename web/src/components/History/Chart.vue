@@ -51,7 +51,8 @@ function makeToolTip(historyList, cur_datetime) {
 
     let toolTipContent = {"checking": "", 'savings': '', 'others': ''};
     historyList.forEach((h) => {
-        const str = "<br/><a href='#{2}' onclick='toolTipClick()' title='{1}'>{0}</a>"
+//        const str = "<br/><a href='#{2}' onclick='toolTipClick()' title='{1}'>{0}</a>"
+        const str = "<br/><a href='#{2}' title='{1}'>{0}</a>"
             .format(h.amount, h.description, h.id);
         if(h.account === 'checking' || h.account === 'savings') {
             toolTipContent[h.account] += str;
@@ -79,6 +80,9 @@ function makeToolTip(historyList, cur_datetime) {
     return result;
 }
 
+function toolTipClick() {
+    console.log("tool tip click");
+}
 
 export default {
     name: 'chart',

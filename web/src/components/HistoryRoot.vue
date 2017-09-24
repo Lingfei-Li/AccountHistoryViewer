@@ -12,6 +12,7 @@
             <button class="btn btn-default" v-on:click="updateRangeDatePastPresent('y', 1);">1 Year</button>
             <button class="btn btn-default" v-on:click="updateRangeDateGetAll()">All History</button>
         </div>
+        <transactionDetails v-bind:transactionDetailsData="this.transactionDetails"></transactionDetails>
     </div>
 </template>
 
@@ -21,6 +22,7 @@ import moment from 'moment';
 import config from '../config';
 
 import chart from './History/Chart.vue';
+import transactionDetails from './History/TransactionDetails.vue';
 
 function toMomentDateTime(sec) {
     return moment.unix(sec);
@@ -29,15 +31,28 @@ function toMomentDateTime(sec) {
 export default {
     name: 'history-root',
     components: {
-        chart
+        chart,
+        transactionDetails
     },
     data () {
         return {
             transactionData: [],
+            transactionDetails: [{
+                "description": "ABC",
+                "amount": 123
+            }],
             balanceData: []
         }
     },
+    watch: {
+        $route: function(newVal, oldVal) {
+            console.log("changed route");
+        }
+    },
     methods: {
+        updateTransactionDetails(transactionDetails) {
+            this.transactionDetails = transactionDetails;
+        },
         processRawTransactionData(transactionData) {
             this.transactionData = transactionData;
 
