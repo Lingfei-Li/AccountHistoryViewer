@@ -1,5 +1,6 @@
 <template>
     <div id="transactionDetails">
+        <h4>Details</h4>
         <div class="container">
             <div v-for="t in transactionDetailsData">
                 {{ t.description }}
@@ -35,7 +36,6 @@ export default {
     },
     mounted() {
         console.log(this.transactionDetailsData)
-//        this.initChart();
     }
 }
 </script>
