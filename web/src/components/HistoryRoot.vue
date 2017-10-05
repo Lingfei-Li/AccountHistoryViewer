@@ -1,15 +1,26 @@
 <template>
     <div id="historyRoot">
-        <h3>{{title}}</h3>
-        <chart v-bind:transactionData="this.transactionData"></chart>
-        <div>
-            <button class="btn btn-secondary" v-on:click="updateRangeDatePastPresent('w', 1);">1 Week</button>
-            <button class="btn btn-secondary" v-on:click="updateRangeDatePastPresent('M', 1);">1 Month</button>
-            <button class="btn btn-secondary" v-on:click="updateRangeDatePastPresent('Q', 1);">1 Quarter</button>
-            <button class="btn btn-secondary" v-on:click="updateRangeDatePastPresent('M', 6);">1/2 Year</button>
-            <button class="btn btn-secondary" v-on:click="updateRangeDatePastPresent('y', 1);">1 Year</button>
-            <button class="btn btn-secondary" v-on:click="updateRangeDateGetAll()">All History</button>
+        <div class="row">
+            <div class="col-sm-10 offset-sm-1">
+                <div class="card">
+                    <h3 class="card-header">{{title}}</h3>
+                    <chart v-bind:transactionData="this.transactionData"></chart>
+                    <div>
+                        <button class="btn btn-secondary" v-on:click="updateRangeDatePastPresent('w', 1);">1 Week</button>
+                        <button class="btn btn-secondary" v-on:click="updateRangeDatePastPresent('w', 2);">2 Weeks</button>
+                        <button class="btn btn-secondary" v-on:click="updateRangeDatePastPresent('w', 3);">3 Weeks</button>
+                        <br/>
+                        <button class="btn btn-secondary" v-on:click="updateRangeDatePastPresent('M', 1);">1 Month</button>
+                        <button class="btn btn-secondary" v-on:click="updateRangeDatePastPresent('Q', 1);">1 Quarter</button>
+                        <button class="btn btn-secondary" v-on:click="updateRangeDatePastPresent('M', 6);">1/2 Year</button>
+                        <br/>
+                        <button class="btn btn-secondary" v-on:click="updateRangeDatePastPresent('y', 1);">1 Year</button>
+                        <button class="btn btn-secondary" v-on:click="updateRangeDateGetAll()">All History</button>
+                    </div>
+                </div>
+            </div>
         </div>
+        <filters></filters>
         <detailsView v-bind:transaction="this.detailedTransaction"></detailsView>
     </div>
 </template>
@@ -17,6 +28,7 @@
 <style>
 #historyRoot {
     text-align: center;
+    margin-top: 20px;
 }
 </style>
 
@@ -27,6 +39,7 @@ import config from '../config';
 
 import chart from './History/Chart.vue';
 import detailsView from './History/DetailsView.vue';
+import filters from './History/Filters.vue';
 
 function toMomentDateTime(sec) {
     return moment.unix(sec);
@@ -36,7 +49,8 @@ export default {
     name: 'history-root',
     components: {
         chart,
-        detailsView
+        detailsView,
+        filters
     },
     data () {
         return {
