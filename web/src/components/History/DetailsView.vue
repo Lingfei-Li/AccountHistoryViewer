@@ -2,8 +2,12 @@
     <div id="detailsView">
         <h4>Details</h4>
         <div class="container">
-            {{ transaction.description }}
-            {{ transaction.amount }}
+            <div>
+                {{ transaction.description }}
+            </div>
+            <div>
+                {{ transaction.amount }}
+            </div>
         </div>
     </div>
 </template>

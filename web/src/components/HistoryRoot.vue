@@ -52,10 +52,23 @@ export default {
     },
     watch: {
         $route: function() {
-            console.log("changed route");
+            console.log("changed route. Id:", this.$route.params.id);
+            const detailViewTransactionId = this.$route.params.id;
+            const transactionDataWithId = this.transactionData.filter(function(item) {
+                return detailViewTransactionId === item.id;
+            });
+            if(transactionDataWithId.length > 1) {
+                console.warn("When updating detail view ID, found more than one transaction data with Id " + detailViewTransactionId);
+            }
+            else if(transactionDataWithId.length === 0) {
+                console.log("Didn't find any matching transaction with Id " + detailViewTransactionId);
+                console.log(this.transactionData);
+                return;
+            }
+            const detailViewTransaction = transactionDataWithId[0];
             this.detailedTransaction = {
-                "description": this.$route.params.id,
-                "amount": 980
+                "description": detailViewTransaction.description,
+                "amount": detailViewTransaction.amount
             }
         }
     },
