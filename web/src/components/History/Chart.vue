@@ -1,11 +1,11 @@
 <template>
     <div id="chart">
         <div class="container">
-            <div id="chartContainer" style="height: 300px; width: 100%;"></div>
+            <div v-bind:style="chartStyle" id="chartContainer" ></div>
+            <h3>{{note}}</h3>
         </div>
     </div>
 </template>
-
 
 <script>
 
@@ -51,7 +51,6 @@ function makeToolTip(historyList, cur_datetime) {
 
     let toolTipContent = {"checking": "", 'savings': '', 'others': ''};
     historyList.forEach((h) => {
-//        const str = "<br/><a href='#{2}' onclick='toolTipClick()' title='{1}'>{0}</a>"
         const str = "<br/><a href='#{2}' title='{1}'>{0}</a>"
             .format(h.amount, h.description, h.id);
         if(h.account === 'checking' || h.account === 'savings') {
@@ -93,12 +92,24 @@ export default {
     },
     data () {
         return {
+            chartStyle: {
+                height: "300px",
+                width: "100%",
+                display: "block"
+            },
             balanceData: [123, 456],
-            chart: {}
+            chart: {},
+            note: ""
         }
     },
     watch: {
-        transactionData: function(newVal, oldVal) {
+        transactionData: function() {
+            if(this.transactionData.length === 0) {
+                this.note = "No Data Available";
+            }
+            else {
+                this.note = this.transactionData.length + " transactions";
+            }
             this.balanceData = makeBalanceData(this.transactionData);
             this.chart.options.data[0].dataPoints = this.balanceData;
             this.chart.render();

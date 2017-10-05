@@ -8,6 +8,12 @@
             <div>
                 {{ transaction.amount }}
             </div>
+            <div>
+                {{ transaction.type }}
+            </div>
+            <div>
+                {{ transaction.transaction_datetime }}
+            </div>
         </div>
     </div>
 </template>

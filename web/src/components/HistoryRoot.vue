@@ -1,8 +1,6 @@
 <template>
     <div id="historyRoot">
-        <div>
-            {{ transactionData.length }}
-        </div>
+        <h3>{{title}}</h3>
         <chart v-bind:transactionData="this.transactionData"></chart>
         <div>
             <button class="btn btn-secondary" v-on:click="updateRangeDatePastPresent('w', 1);">1 Week</button>
@@ -42,6 +40,7 @@ export default {
     },
     data () {
         return {
+            title: "Title",
             transactionData: [],
             detailedTransaction: {
                 "description": "ABC",
@@ -65,17 +64,10 @@ export default {
                 console.log(this.transactionData);
                 return;
             }
-            const detailViewTransaction = transactionDataWithId[0];
-            this.detailedTransaction = {
-                "description": detailViewTransaction.description,
-                "amount": detailViewTransaction.amount
-            }
+            this.detailedTransaction = transactionDataWithId[0];
         }
     },
     methods: {
-        updateTransactionDetails(transactionDetails) {
-            this.transactionDetails = transactionDetails;
-        },
         processRawTransactionData(transactionData) {
             this.transactionData = transactionData;
 
@@ -101,6 +93,7 @@ export default {
                 });
         },
         updateRangeDatePastPresent(period, number) {
+            this.title = number + " " + period;
             this.updateHistoryRangeDate(moment().subtract(period, number).unix(), 0);
         },
         updateRangeDateGetAll() {
