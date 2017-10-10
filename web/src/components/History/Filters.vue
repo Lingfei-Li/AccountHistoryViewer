@@ -5,7 +5,10 @@
                 <h3 class="card-header">Filters</h3>
                 <div class="form-control">
                     <div v-for="filter in filters" class="row">
-                        <div class="col-sm-4">
+                        <div class="col-sm-1">
+                            <img v-if="filter.active" src="../../assets/check-mark-1292787_960_720.png" class="filterActiveMark"/>
+                        </div>
+                        <div class="col-sm-3">
                             <label>
                                 <select v-model="filter.key" class="form-control">
                                     <option value="description">Description</option>
@@ -34,13 +37,8 @@
                                 <input class="form-control" v-model="filter.value"/>
                             </label>
                         </div>
-                        <div class="col-sm-2">
-                            <label>
-                                <div class="form-control">{{filter.active}}</div>
-                            </label>
-                        </div>
                         <div class="col-sm-1">
-                            <button class="btn btn-secondary" v-on:click="filters.pop()">X</button>
+                            <img src="../../assets/trash.png" class="popFilterButton" v-on:click="filters.pop()" />
                         </div>
                     </div>
                     <button class="btn btn-secondary" v-on:click="addFilter()">Add Filter</button>
@@ -54,6 +52,19 @@
 <style>
     #filters {
         margin-top: 20px;
+    }
+    .filterActiveMark {
+        display: block;
+        margin: 5px auto;
+        width: 20px;
+        height: 20px;
+    }
+    .popFilterButton{
+        display: block;
+        margin: 5px auto;
+        width: 30px;
+        height: 30px;
+        cursor: pointer;
     }
 </style>
 
