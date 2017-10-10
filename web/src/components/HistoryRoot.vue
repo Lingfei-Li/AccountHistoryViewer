@@ -4,7 +4,7 @@
             <div class="col-sm-10 offset-sm-1">
                 <div class="card">
                     <h3 class="card-header">{{title}}</h3>
-                    <chart v-bind:transactionData="this.transactionData"></chart>
+                    <chart v-bind:transactionData="transactionData"></chart>
                     <div>
                         <button class="btn btn-secondary" v-on:click="updateRangeDatePastPresent('w', 1);">1 Week</button>
                         <button class="btn btn-secondary" v-on:click="updateRangeDatePastPresent('w', 2);">2 Weeks</button>
@@ -52,13 +52,47 @@ export default {
         detailsView,
         filters
     },
+    computed: {
+        transactionData() {
+            let filters = this.$store.state.filters;
+            return this.$store.state.transactionData.filter(function(transaction) {
+                let eligible = true;
+                filters.filter(f => f.active).forEach(function(filter) {
+                    switch(filter.operator.trim()) {
+                        case "contains":
+                            eligible = String(transaction[filter.key]).indexOf(filter.value) !== -1;
+                            break;
+                        case "<":
+                            eligible = filter.key === "amount" && transaction['amount'] < filter.value;
+                            break;
+                        case ">":
+                            eligible = filter.key === "amount" && transaction['amount'] > filter.value;
+                            break;
+                        case "<=":
+                            eligible = filter.key === "amount" && transaction['amount'] <= filter.value;
+                            break;
+                        case ">=":
+                            eligible = filter.key === "amount" && transaction['amount'] >= filter.value;
+                            break;
+                        case "=":
+                        case "==":
+                            eligible = String(transaction[filter.key]) === filter.value !== -1;
+                            break;
+                        default:
+                            eligible = true;
+                            break;
+                    }
+                });
+                return eligible;
+            });
+        }
+    },
     data () {
         return {
             title: "Title",
-            transactionData: [],
             detailedTransaction: {
-                "description": "ABC",
-                "amount": 123
+                "description": "Description",
+                "amount": 0
             },
             balanceData: []
         }
@@ -67,7 +101,7 @@ export default {
         $route: function() {
             console.log("changed route. Id:", this.$route.params.id);
             const detailViewTransactionId = this.$route.params.id;
-            const transactionDataWithId = this.transactionData.filter(function(item) {
+            const transactionDataWithId = this.$store.state.transactionData.filter(function(item) {
                 return detailViewTransactionId === item.id;
             });
             if(transactionDataWithId.length > 1) {
@@ -75,7 +109,7 @@ export default {
             }
             else if(transactionDataWithId.length === 0) {
                 console.log("Didn't find any matching transaction with Id " + detailViewTransactionId);
-                console.log(this.transactionData);
+                console.log(this.$store.state.transactionData);
                 return;
             }
             this.detailedTransaction = transactionDataWithId[0];
@@ -83,9 +117,9 @@ export default {
     },
     methods: {
         processRawTransactionData(transactionData) {
-            this.transactionData = transactionData;
+            this.$store.state.transactionData = transactionData;
 
-            this.transactionData = this.transactionData.map(h => {
+            this.$store.state.transactionData = this.$store.state.transactionData.map(h => {
                 h.transaction_datetime = toMomentDateTime(parseInt(h.transaction_date_sec));
                 return h;
             });
