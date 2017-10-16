@@ -5,15 +5,13 @@
                 <div class="card">
                     <h3 class="card-header">{{title}}</h3>
                     <chart v-bind:transactionData="transactionData"></chart>
-                    <div>
+                    <div class="card-footer text-right">
                         <button class="btn btn-secondary" v-on:click="updateRangeDatePastPresent('w', 1);">1 Week</button>
                         <button class="btn btn-secondary" v-on:click="updateRangeDatePastPresent('w', 2);">2 Weeks</button>
                         <button class="btn btn-secondary" v-on:click="updateRangeDatePastPresent('w', 3);">3 Weeks</button>
-                        <br/>
                         <button class="btn btn-secondary" v-on:click="updateRangeDatePastPresent('M', 1);">1 Month</button>
                         <button class="btn btn-secondary" v-on:click="updateRangeDatePastPresent('Q', 1);">1 Quarter</button>
                         <button class="btn btn-secondary" v-on:click="updateRangeDatePastPresent('M', 6);">1/2 Year</button>
-                        <br/>
                         <button class="btn btn-secondary" v-on:click="updateRangeDatePastPresent('y', 1);">1 Year</button>
                         <button class="btn btn-secondary" v-on:click="updateRangeDateGetAll()">All History</button>
                     </div>
@@ -54,37 +52,7 @@ export default {
     },
     computed: {
         transactionData() {
-            let filters = this.$store.state.filters;
-            return this.$store.state.transactionData.filter(function(transaction) {
-                let eligible = true;
-                filters.filter(f => f.active).forEach(function(filter) {
-                    switch(filter.operator.trim()) {
-                        case "contains":
-                            eligible = String(transaction[filter.key]).indexOf(filter.value) !== -1;
-                            break;
-                        case "<":
-                            eligible = filter.key === "amount" && transaction['amount'] < filter.value;
-                            break;
-                        case ">":
-                            eligible = filter.key === "amount" && transaction['amount'] > filter.value;
-                            break;
-                        case "<=":
-                            eligible = filter.key === "amount" && transaction['amount'] <= filter.value;
-                            break;
-                        case ">=":
-                            eligible = filter.key === "amount" && transaction['amount'] >= filter.value;
-                            break;
-                        case "=":
-                        case "==":
-                            eligible = String(transaction[filter.key]) === filter.value !== -1;
-                            break;
-                        default:
-                            eligible = true;
-                            break;
-                    }
-                });
-                return eligible;
-            });
+            return this.$store.getters.filteredTransactionData;
         }
     },
     data () {

@@ -13,7 +13,7 @@ export default new Router({
     },
     {
         path: '/:id',
-        name: 'Dashboard',
+        name: 'DashboardWithDetail',
         component: Dashboard
     }
     ]

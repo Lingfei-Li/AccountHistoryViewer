@@ -79,10 +79,6 @@ function makeToolTip(historyList, cur_datetime) {
     return result;
 }
 
-function toolTipClick() {
-    console.log("tool tip click");
-}
-
 export default {
     name: 'chart',
     props: {
