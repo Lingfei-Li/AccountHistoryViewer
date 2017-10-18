@@ -1,0 +1,130 @@
+
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+
+Parameters:
+  AccountTransactionsTableName:
+    Description: The name of the account transactions table
+    Type: String
+  LastTransactionDateTableName:
+    Description: The name of the last-transaction date table
+    Type: String
+  AccountDailyBalanceTableName:
+    Description: The name of the account daily balance table
+    Type: String
+  AccountMonthlyBalanceTableName:
+    Description: The name of the account montly balance table
+    Type: String
+
+
+Resources:
+  ListAllTransactionsFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: transactions.list
+      Runtime: nodejs6.10
+      Events:
+        ListAllTransactions:
+          Type: Api
+          Properties:
+            Path: /transactions
+            Method: get
+      Environment:
+        Variables:
+          ACCOUNT_TRANSACTIONS_TABLE_NAME: AccountTransactionsTableName
+  ListDateRangeFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: transactions.listBetweenDates
+      Runtime: nodejs6.10
+      Events:
+        ListDateRange:
+          Type: Api
+          Properties:
+            Path: /transactions/{startDateSecStr}/{endDateSecStr}
+            Method: get
+      Environment:
+        Variables:
+          ACCOUNT_TRANSACTIONS_TABLE_NAME: AccountTransactionsTableName
+
+  DailyBalanceStreamProcessor:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: balance.updateDailyBalance
+      Runtime: nodejs6.10
+      Events:
+        Stream:
+          Type: DynamoDB
+          Properties:
+            Stream:
+              Fn::GetAtt:
+              - AccountTransactionsTable
+              - StreamArn
+            BatchSize: 10
+            StartingPosition: TRIM_HORIZON
+
+      Environment:
+        Variables:
+          ACCOUNT_DAILY_BALANCE_TABLE: AccountDailyBalanceTableName
+          ACCOUNT_MONTHLY_BALANCE_TABLE: AccountMonthlyBalanceTableName
+
+  AccountTransactionsTable:
+    Type: "AWS::DynamoDB::Table"
+    Properties:
+      TableName:
+        Ref: AccountTransactionsTableName
+      AttributeDefinitions:
+        - AttributeName: "TransactionDateSec"
+          AttributeType: "N"
+        - AttributeName: "UUID"
+          AttributeType: "S"
+      KeySchema:
+        - AttributeName: "TransactionDateSec"
+          KeyType: "HASH"
+        - AttributeName: "UUID"
+          KeyType: "RANGE"
+      ProvisionedThroughput:
+        ReadCapacityUnits: "5"
+        WriteCapacityUnits: "5"
+      StreamSpecification:
+        StreamViewType: NEW_IMAGE
+
+  LastTransactionDateTable:
+    Type: "AWS::DynamoDB::Table"
+    Properties:
+      TableName:
+        Ref: LastTransactionDateTableName
+      AttributeDefinitions:
+        - AttributeName: "BankName"
+          AttributeType: "S"
+        - AttributeName: "SequenceNumber"
+          AttributeType: "N"
+      KeySchema:
+        - AttributeName: "BankName"
+          KeyType: "HASH"
+        - AttributeName: "SequenceNumber"
+          KeyType: "RANGE"
+      ProvisionedThroughput:
+        ReadCapacityUnits: "5"
+        WriteCapacityUnits: "5"
+
+  AccountDailyBalanceTable:
+    Type: "AWS::DynamoDB::Table"
+    Properties:
+      TableName:
+        Ref: AccountDailyBalanceTableName
+      AttributeDefinitions:
+        - AttributeName: "DateSec"
+          AttributeType: "N"
+        - AttributeName: "BankName"
+          AttributeType: "S"
+      KeySchema:
+        - AttributeName: "DateSec"
+          KeyType: "HASH"
+        - AttributeName: "BankName"
+          KeyType: "RANGE"
+      ProvisionedThroughput:
+        ReadCapacityUnits: "5"
+        WriteCapacityUnits: "5"
+
+

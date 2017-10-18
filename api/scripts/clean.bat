@@ -1,0 +1,1 @@
+aws s3 rm s3://project-erebor-deployment-bucket --recursive

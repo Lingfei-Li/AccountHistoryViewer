@@ -1,0 +1,33 @@
+Transactions:
+- AttributeName: "TransactionDateSec"
+AttributeType: "N"
+- AttributeName: "UUID"
+AttributeType: "S"
+- AttributeName: "UserId"
+AttributeType: "S"
+- AttributeName: "AccountType"
+AttributeType: "S"
+- AttributeName: "Amount"
+AttributeType: "N"
+- AttributeName: "BankName"
+AttributeType: "S"
+- AttributeName: "CreateDateSec"
+AttributeType: "N"
+- AttributeName: "Description"
+AttributeType: "S"
+- AttributeName: "TransactionType"
+AttributeType: "S"
+
+LastTransactionDate:
+- AttributeName: "BankName"
+AttributeType: "S"
+- AttributeName: "SequenceNumber"
+AttributeType: "N"
+
+DailyBalance:
+- AttributeName: "DateSec"
+AttributeType: "N"
+- AttributeName: "BankName"
+AttributeType: "S"
+- AttributeName: "RecordedIdSet"
+AttributeType: "SS"
