@@ -21,13 +21,15 @@ AttributeType: "S"
 LastTransactionDate:
 - AttributeName: "BankName"
 AttributeType: "S"
-- AttributeName: "SequenceNumber"
+- AttributeName: "TransactionDateSec"
 AttributeType: "N"
+- AttributeName: "RecordedTransactionSHA1"
+AttributeType: "L"
 
 DailyBalance:
 - AttributeName: "DateSec"
 AttributeType: "N"
 - AttributeName: "BankName"
 AttributeType: "S"
-- AttributeName: "RecordedIdSet"
-AttributeType: "SS"
+- AttributeName: "RecordedIds"
+AttributeType: "S"

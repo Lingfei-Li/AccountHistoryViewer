@@ -2,7 +2,7 @@ from selenium.common.exceptions import StaleElementReferenceException
 from crawlers import ChaseCrawler
 from crawlers import USBankCrawler
 from config import accounts
-from ddb_dao import put_history
+from ddb_dao import put_transactions
 from ddb_dao import filter_unprocessed_transactions
 import time
 
@@ -19,7 +19,7 @@ for account in accounts:
             print("done.")
 
             # Put data into database
-            put_history(account['bank'], trans)
+            put_transactions(account['bank'], trans)
     elif account['bank'].lower() == 'chase':
         with ChaseCrawler(account['username'], account['password']) as crawler:
             try:
@@ -33,7 +33,7 @@ for account in accounts:
             filter_unprocessed_transactions(account['bank'].lower, trans)
 
             # Put data into database
-            put_history(account['bank'], trans)
+            put_transactions(account['bank'], trans)
     else:
         print("Banks other than chase/usbank is not supported yet")
 

@@ -1,0 +1,16 @@
+{
+  "name": "ProjectEreborAPI",
+  "description": "Monitor the account history and spending trend",
+  "version": "1.0.0",
+  "author": "Lingfei Li <cslilingfei@outlook.com>",
+  "private": true,
+  "scripts": {},
+  "dependencies": {
+    "aws-sdk": "^2.108.0",
+    "bluebird": "^3.5.0",
+    "moment": "^2.18.1",
+    "object-hash": "^1.2.0",
+    "uuid": "^3.1.0"
+  },
+  "devDependencies": {}
+}

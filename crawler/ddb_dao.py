@@ -11,72 +11,42 @@ from utils import convert_to_date_sec
 from utils import convert_money_to_float
 from botocore.exceptions import  ClientError
 from utils import convert_date_sec_to_datetime
+from config import app_config
 
 dynamodb = boto3.resource('dynamodb', region_name='us-west-2')
-history_table = dynamodb.Table('account-history-service')
-last_date_table = dynamodb.Table('last-transaction-date')
+transactions_table = dynamodb.Table(app_config["AccountTransactionsTableName"])
+last_date_table = dynamodb.Table(app_config['LastTransactionDateTableName'])
+kinesis = boto3.client('kinesis')
 
-
-def get_dynamodb():
-    return dynamodb
-
-def get_history_table():
-    return history_table
-
-def get_last_date_table():
-    return last_date_table
-
-def get_all_history():
-    response = history_table.scan(
-        ProjectionExpression="account, amount, bank, description, transaction_date_sec, #typ",
-        ExpressionAttributeNames={'#typ': 'type'}
-    )
-    result = response['Items']
-    for item in result:
-        print(item['amount'])
-        item['amount'] = convert_money_to_float(item['amount'])
-        item['transaction_date_sec'] = int(item['transaction_date_sec'])
-    return result
-
-
-def put_history(bank, history_list):
-    print("Filtering processed history. Total: ", len(history_list))
-    history_list = filter_unprocessed_transactions(bank, history_list)
-    print("Filtering completed. Left: ", len(history_list))
+def put_transactions(bank, transactions):
+    print("Filtering processed transactions. Total: ", len(transactions))
+    transactions = filter_unprocessed_transactions(bank, transactions)
+    print("Filtering completed. Left: ", len(transactions))
     idx = 0
     max_transaction_date_sec = 0
-    with history_table.batch_writer() as batch:
-        for history in history_list:
+    with transactions_table.batch_writer() as batch:
+        for t in transactions:
             batch.put_item(
-                Item={
-                    'id': str(uuid1()),
-                    'create_date_sec': int(round(time.time())),
-                    'transaction_date_sec': history['date_sec'],
-                    'type': history['type'],
-                    'description': history['description'],
-                    'amount': history['amount'],
-                    'bank': history['bank'],
-                    'account': history['account']
-                }
+                Item=t.getItem()
             )
             idx += 1
-            if history['date_sec'] > max_transaction_date_sec:
-                max_transaction_date_sec = history['date_sec']
-            print("{}/{}\n{}\n{}\n".format(idx, len(history_list), history['amount'], history['description']))
+            if t['TransactionDateSec'] > max_transaction_date_sec:
+                max_transaction_date_sec = t['TransactionDateSec']
+            print("{}/{}\n{}\n{}\n".format(idx, len(transactions), t['Amount'], t['Description']))
     print('Writing last transaction date sec')
     if max_transaction_date_sec != 0:
         put_last_transaction_date(bank, max_transaction_date_sec)
 
 def get_history_on_date(bank, dateSec):
-    response = history_table.scan(
-        ProjectionExpression="account, amount, bank, description, transaction_date_sec, #typ",
-        ExpressionAttributeNames={'#typ': 'type'},
+    response = transactions_table.scan(
+        ProjectionExpression='TransactionDateSec, #_UUID, UserId, AccountType, Amount, BankName, CreateDateSec, Description, TransactionType',
+        ExpressionAttributeNames={'#_UUID': 'UUID'},
         FilterExpression=Attr('transaction_date_sec').eq(dateSec)
     )
     result = response['Items']
     for item in result:
-        item['amount'] = convert_money_to_float(item['amount'])
-        item['transaction_date_sec'] = int(item['transaction_date_sec'])
+        item['Amount'] = convert_money_to_float(item['Amount'])
+        item['TransactionDateSec'] = int(item['TransactionDateSec'])
     return result
 
 def get_last_transaction_date_from_history(bank):

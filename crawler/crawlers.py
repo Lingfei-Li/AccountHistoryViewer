@@ -1,10 +1,14 @@
 from selenium import webdriver
-from utils import convert_to_date_sec
-from utils import convert_money_to_float
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.keys import Keys
+
+from utils import convert_to_date_sec
+from utils import convert_money_to_float
+from accountTransactionModel import Transaction
+
+from uuid import uuid1
 import time
 import csv
 import os
@@ -50,14 +54,22 @@ class ChaseCrawler(BankCrawler):
                     print("Cannot parse date: ", date_str[i].text)
                     continue
 
-                transactions.append({
-                    'date_sec': date_sec,
-                    'type': type[i].text,
-                    'description': desc[i].text,
-                    'amount': convert_money_to_float(amount[i].text),
-                    'bank': 'Chase',
-                    'account': account
-                })
+                # newTransaction = Transaction(TransactionDateSec=date_sec, UUID=str(uuid1()), )
+                newTransaction = Transaction(TransactionDateSec=date_sec, UUID=str(uuid1), UserId="lingfei",
+                                             AccountType=account, Amount=convert_money_to_float(amount[i].text),
+                                             BankName='Chase', CreateDateSec=int(round(time.time())), Description=desc[i].text,
+                                             TransactionType=type[i].text)
+
+                transactions.append(newTransaction)
+
+                # transactions.append({
+                #     'date_sec': date_sec,
+                #     'type': type[i].text,
+                #     'description': desc[i].text,
+                #     'amount': convert_money_to_float(amount[i].text),
+                #     'bank': 'Chase',
+                #     'account': account
+                # })
         return transactions
 
     def start_extraction(self):
@@ -119,14 +131,21 @@ class USBankCrawler(BankCrawler):
                         print("Cannot parse date: ", date_str)
                     continue
 
-                transactions.append({
-                    'date_sec': date_sec,
-                    'type': type,
-                    'description': description,
-                    'amount': convert_money_to_float(amount),
-                    'bank': 'USBank',
-                    'account': account
-                })
+                newTransaction = Transaction(TransactionDateSec=date_sec, UUID=str(uuid1), UserId="lingfei",
+                                             AccountType=account, Amount=convert_money_to_float(amount),
+                                             BankName='USBank', CreateDateSec=int(round(time.time())), Description=description,
+                                             TransactionType=type)
+
+                transactions.append(newTransaction)
+
+                # transactions.append({
+                #     'date_sec': date_sec,
+                #     'type': type,
+                #     'description': description,
+                #     'amount': convert_money_to_float(amount),
+                #     'bank': 'USBank',
+                #     'account': account
+                # })
         return transactions
 
     def readCSVThenDelete(self, account):
