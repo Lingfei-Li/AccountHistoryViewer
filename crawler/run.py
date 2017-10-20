@@ -2,8 +2,9 @@ from selenium.common.exceptions import StaleElementReferenceException
 from crawlers import ChaseCrawler
 from crawlers import USBankCrawler
 from config import accounts
-from ddb_dao import put_transactions
-from ddb_dao import filter_unprocessed_transactions
+# from ddb_dao import put_transactions
+# from ddb_dao import filter_unprocessed_transactions
+import kinesis
 import time
 
 
@@ -13,27 +14,17 @@ for account in accounts:
             try:
                 trans = crawler.start_extraction()
             except StaleElementReferenceException:
-                print("handling exception...")
                 trans = crawler.start_extraction()
 
-            print("done.")
-
-            # Put data into database
-            put_transactions(account['bank'], trans)
+            kinesis.put_transactions(trans)
     elif account['bank'].lower() == 'chase':
         with ChaseCrawler(account['username'], account['password']) as crawler:
             try:
                 trans = crawler.start_extraction()
             except StaleElementReferenceException:
-                print("handling exception...")
                 trans = crawler.start_extraction()
 
-            print("done.")
-
-            filter_unprocessed_transactions(account['bank'].lower, trans)
-
-            # Put data into database
-            put_transactions(account['bank'], trans)
+            kinesis.put_transactions(trans)
     else:
         print("Banks other than chase/usbank is not supported yet")
 

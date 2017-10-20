@@ -32,39 +32,121 @@ exports.processTransactionDataStream = (event, context, callback) => {
     for(let bankName in records) {
         let transactions = records[bankName];
 
-        transactions.sort(function(a, b) {
-            return a.TransactionDateSec < b.TransactionDateSec;
-        });
-
-        let lastTransactionParams = {
+        let lastTransactionQueryParams = {
             TableName: LAST_TRANSACTION_DATE_TABLE,
             KeyConditionExpression: "BankName = :bankName",
             ExpressionAttributeValues: {
                 ":bankName": bankName
-            },
-            ScanIndexForward: false
+            }
         };
-        dynamodb.query(lastTransactionParams).promise().then(function(data) {
-            let filteredTransactions;
-            if(data.Items.length === 0) {
-                console.log(`Last transaction date for bank ${bankName} is not present yet`);
-                filteredTransactions = transactions;
+        dynamodb.query(lastTransactionQueryParams, function(err, data) {
+            if(err) {
+                console.error("Failed to query last transaction date for bank: ", bankName);
+                console.error(err);
+                return callback(internalErrorResponse(err));
+            } else {
+                let filteredTransactions;
+                if(data.Items.length === 0) {
+                    console.log(`Last transaction date for bank ${bankName} is not present yet`);
+
+                    filteredTransactions = transactions;
+                } else {
+                    console.log("data.Items[0]:", data.Items[0]);
+                    let lastTransactionDateSec = data.Items[0].TransactionDateSec;
+                    let recordedTransactionsHash = data.Items[0].RecordedTransactionsSHA1;
+                    console.log(`Last transaction date for bank ${bankName} is `, lastTransactionDateSec);
+
+                    console.log("recorded transactions sha1:");
+                    data.Items[0].RecordedTransactionsSHA1.forEach(function(item) {
+                        console.log(item);
+                    });
+
+                    filteredTransactions = transactions.filter(function(item) {
+                        return item.TransactionDateSec >= lastTransactionDateSec && !recordedTransactionsHash.includes(hash(item));
+                    });
+                }
+
+                if(filteredTransactions.length === 0) {
+                    console.log("All transactions have already been recorded");
+                    return callback(null, successResponse("All transactions have already been recorded"));
+                }
+                else {
+                    console.log("Filtered transactions:");
+                    filteredTransactions.forEach(function(item) {
+                        console.log(item);
+                    });
+
+                    let lastTransactionDateSec = filteredTransactions.reduce(function(result, currValue) {
+                        return Math.max(result, currValue.TransactionDateSec);
+                    }, 0);
+                    console.log("Last transaction date for this batch:", lastTransactionDateSec);
+
+                    let recordedTransactionsHash = [];
+                    if(data.Items.length === 0 || lastTransactionDateSec > data.Items[0].TransactionDateSec) {
+                        // If there's no last transaction date for the current bank, or the new transaction date is larger,
+                        // we will update the last transaction date
+                        filteredTransactions.forEach(function(item) {
+                            recordedTransactionsHash.push(hash(item));
+                        });
+                    } else if(lastTransactionDateSec === data.Items[0].TransactionDateSec) {
+                        //Update the existing value. Specifically, update RecordedTransactionSHA1
+                        recordedTransactionsHash = data.Items[0].RecordedTransactionSHA1;
+                        filteredTransactions.forEach(function(item) {
+                            recordedTransactionsHash.push(hash(item));
+                        });
+                    }
+
+                    console.log("Transactions hash:");
+                    recordedTransactionsHash.forEach(function(item) {
+                        console.log(item);
+                    });
+
+                    // Put the filtered transactions to AccountTransactions table
+                    let batchWriteRequestArray = [];
+                    filteredTransactions.forEach(function(item) {
+                        batchWriteRequestArray.push({
+                            PutRequest: {
+                                Item: item
+                            }
+                        })
+                    });
+                    let transactionsBatchWriteParams = {'RequestItems': {}};
+                    transactionsBatchWriteParams['RequestItems'][TRANSACTIONS_TABLE] = batchWriteRequestArray;
+                    dynamodb.batchWrite(transactionsBatchWriteParams, function(err, data) {
+                        if(err) {
+                            console.error("Failed to batch write last transaction date data");
+                            console.error(err);
+                            return callback(internalErrorResponse(err));
+                        } else {
+                            console.log("Successfully put transactions to DynamoDB");
+
+                            // Update last transaction date for the bank
+                            let lastTransactionPutParams = {
+                                TableName: LAST_TRANSACTION_DATE_TABLE,
+                                Item: {
+                                    "BankName": bankName,
+                                    "TransactionDateSec": lastTransactionDateSec,
+                                    "RecordedTransactionsSHA1": recordedTransactionsHash
+                                }
+                            };
+
+                            console.log("DynamoDB last transaction date params:", lastTransactionPutParams);
+                            dynamodb.put(lastTransactionPutParams, function(err, data) {
+                                if(err) {
+                                    console.error("Failed to batch write last transaction date data");
+                                    console.error(err);
+                                    return callback(internalErrorResponse(err));
+                                } else {
+                                    console.log("Successfully put last transaction date");
+
+                                    return callback(null, successResponse("Successfully put transactions to DynamoDB"));
+                                }
+                            });
+                        }
+                    });
+
+                }
             }
-            else {
-                let lastTransactionDateSec = data.Items[0].TransactionDateSec;
-                let recordedTransactionsHash = data.Items[0].RecordedTransactionSHA1;
-                filteredTransactions = transactions.filter(function(item) {
-                    return item.TransactionDateSec >= lastTransactionDateSec && !recordedTransactionsHash.includes(hash(item));
-                });
-            }
-
-            //TODO: Put the last transaction date to LastTransactionDate table
-
-            //TODO: Put the filtered transactions to AccountTransactions table
-
-        }).catch(function(err) {
-            console.error("Failed to query last transaction date for bank: ", bankName);
-            console.error(err);
         });
     }
 
@@ -103,7 +185,7 @@ exports.list = (event, context, callback) => {
         };
         return callback(null, response);
     }).catch(function(err) {
-        return callback(null, internalErrorResponse(err));
+        return callback(internalErrorResponse(err));
     });
 };
 
@@ -169,6 +251,7 @@ exports.listBetweenDates = (event, context, callback) => {
         return callback(null, response);
     });
 };
+
 function internalErrorResponse(err) {
     return {
         statusCode: 500,
@@ -184,3 +267,16 @@ function internalErrorResponse(err) {
 }
 
 
+function successResponse(msg) {
+    return {
+        statusCode: 200,
+        headers: {
+            "Access-Control-Allow-Headers": "Content-Type,Authorization,X-Amz-Date,X-Api-Key,X-Amz-Security-Token",
+            "Access-Control-Allow-Methods": "DELETE,GET,HEAD,OPTIONS,PATCH,POST,PUT",
+            "Access-Control-Allow-Origin": "*"
+        },
+        body: JSON.stringify({
+            message: msg
+        }),
+    };
+}

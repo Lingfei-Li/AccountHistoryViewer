@@ -4,7 +4,7 @@
 class Transaction:
     def __init__(self, TransactionDateSec, UUID, UserId, AccountType, Amount, BankName, CreateDateSec, Description, TransactionType):
         self.item = dict()
-        self.item['TransactionDateSec'] = TransactionType
+        self.item['TransactionDateSec'] = TransactionDateSec
         self.item['UUID'] = UUID
         self.item['UserId'] = UserId
         self.item['AccountType'] = AccountType

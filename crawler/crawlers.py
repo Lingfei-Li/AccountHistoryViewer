@@ -54,22 +54,12 @@ class ChaseCrawler(BankCrawler):
                     print("Cannot parse date: ", date_str[i].text)
                     continue
 
-                # newTransaction = Transaction(TransactionDateSec=date_sec, UUID=str(uuid1()), )
                 newTransaction = Transaction(TransactionDateSec=date_sec, UUID=str(uuid1), UserId="lingfei",
                                              AccountType=account, Amount=convert_money_to_float(amount[i].text),
                                              BankName='Chase', CreateDateSec=int(round(time.time())), Description=desc[i].text,
                                              TransactionType=type[i].text)
 
                 transactions.append(newTransaction)
-
-                # transactions.append({
-                #     'date_sec': date_sec,
-                #     'type': type[i].text,
-                #     'description': desc[i].text,
-                #     'amount': convert_money_to_float(amount[i].text),
-                #     'bank': 'Chase',
-                #     'account': account
-                # })
         return transactions
 
     def start_extraction(self):
@@ -137,15 +127,6 @@ class USBankCrawler(BankCrawler):
                                              TransactionType=type)
 
                 transactions.append(newTransaction)
-
-                # transactions.append({
-                #     'date_sec': date_sec,
-                #     'type': type,
-                #     'description': description,
-                #     'amount': convert_money_to_float(amount),
-                #     'bank': 'USBank',
-                #     'account': account
-                # })
         return transactions
 
     def readCSVThenDelete(self, account):

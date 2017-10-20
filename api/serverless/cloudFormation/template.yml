@@ -40,10 +40,14 @@ Resources:
               - Arn
             StartingPosition: TRIM_HORIZON
           BatchSize: 101
+      Policies:
+        - AmazonDynamoDBFullAccess
       Environment:
         Variables:
           LAST_TRANSACTION_DATE_TABLE:
             Ref: LastTransactionDateTable
+          ACCOUNT_TRANSACTIONS_TABLE_NAME:
+            Ref: AccountTransactionsTableName
 
   ListAllTransactionsFunction:
     Type: AWS::Serverless::Function
@@ -154,13 +158,9 @@ Resources:
       AttributeDefinitions:
         - AttributeName: "BankName"
           AttributeType: "S"
-        - AttributeName: "SequenceNumber"
-          AttributeType: "N"
       KeySchema:
         - AttributeName: "BankName"
           KeyType: "HASH"
-        - AttributeName: "SequenceNumber"
-          KeyType: "RANGE"
       ProvisionedThroughput:
         ReadCapacityUnits: "5"
         WriteCapacityUnits: "5"
@@ -171,10 +171,10 @@ Resources:
       TableName:
         Ref: AccountDailyBalanceTableName
       AttributeDefinitions:
-        - AttributeName: "DateSec"
-          AttributeType: "N"
         - AttributeName: "BankName"
           AttributeType: "S"
+        - AttributeName: "DateSec"
+          AttributeType: "N"
       KeySchema:
         - AttributeName: "DateSec"
           KeyType: "HASH"
