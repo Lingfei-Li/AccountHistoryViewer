@@ -7,7 +7,6 @@
   "scripts": {},
   "dependencies": {
     "aws-sdk": "^2.108.0",
-    "bluebird": "^3.5.0",
     "moment": "^2.18.1",
     "object-hash": "^1.2.0",
     "uuid": "^3.1.0"

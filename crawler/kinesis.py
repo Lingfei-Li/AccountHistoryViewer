@@ -2,6 +2,7 @@ import boto3
 import json
 from config import app_config
 from accountTransactionModel import Transaction
+import time
 
 kinesis_client = boto3.client('kinesis', region_name='us-west-2')
 
@@ -27,12 +28,14 @@ def put_transactions(transactions):
     put_response = kinesis_client.put_records(StreamName=stream_name, Records=records)
     print(put_response)
 
-# Unit testing
+# Testing: put a mock record to the kinesis stream
 if __name__ == '__main__':
+    t = int(time.time())
+    t_override = 1509218860
     describe_stream()
-    t = Transaction(TransactionDateSec=12345678, UUID='UUID-1234', UserId='UserId-1234', AccountType='AccountType-checking',
-                    Amount=1199, BankName='chase', CreateDateSec=87654321, Description='Description-something',
+    trans = Transaction(TransactionDateSec=t_override, UUID='UUID-'+str(t), UserId='UserId-1234', AccountType='AccountType-checking',
+                    Amount=1199, BankName='chase', Description='Description-something',
                     TransactionType='TransactionType-debit')
-    transactions = [t]
+    transactions = [trans]
     put_transactions(transactions)
 

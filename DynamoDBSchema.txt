@@ -1,35 +1,21 @@
 Transactions:
-- AttributeName: "TransactionDateSec"
-AttributeType: "N"
-- AttributeName: "UUID"
-AttributeType: "S"
-- AttributeName: "UserId"
-AttributeType: "S"
-- AttributeName: "AccountType"
-AttributeType: "S"
-- AttributeName: "Amount"
-AttributeType: "N"
-- AttributeName: "BankName"
-AttributeType: "S"
-- AttributeName: "CreateDateSec"
-AttributeType: "N"
-- AttributeName: "Description"
-AttributeType: "S"
-- AttributeName: "TransactionType"
-AttributeType: "S"
+   -TransactionDateSec: N
+   +UUID: S
+    UserId: S
+    AccountType: S
+    Amount: N
+    BankName: S
+    CreateDateSec: N
+    Description: S
+    TransactionType: S
 
 LastTransactionDate:
-- AttributeName: "BankName"
-AttributeType: "S"
-- AttributeName: "TransactionDateSec"
-AttributeType: "N"
-- AttributeName: "RecordedTransactionsSHA1"
-AttributeType: "L"
+   -BankName: S
+   +TransactionDateSec: N
+    RecordedTransactionsSHA1: L
 
 Daily/MonthlyBalance:
-- AttributeName: "BankName"
-AttributeType: "S"
-- AttributeName: "DateSec"
-AttributeType: "N"
-- AttributeName: "RecordedIds"
-AttributeType: "S"
+   -DateSec: N
+   +BankName: S
+    Balance: N
+    RecordedTransactionsId: L

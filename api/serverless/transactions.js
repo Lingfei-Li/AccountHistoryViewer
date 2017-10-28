@@ -8,8 +8,6 @@ const hash = require('object-hash');
 const TRANSACTIONS_TABLE = process.env.ACCOUNT_TRANSACTIONS_TABLE_NAME;
 const LAST_TRANSACTION_DATE_TABLE = process.env.LAST_TRANSACTION_DATE_TABLE;
 
-AWS.config.setPromisesDependency(require('bluebird'));
-
 const dynamodb = new AWS.DynamoDB.DocumentClient();
 
 /*
@@ -89,8 +87,10 @@ exports.processTransactionDataStream = (event, context, callback) => {
                             recordedTransactionsHash.push(hash(item));
                         });
                     } else if(lastTransactionDateSec === data.Items[0].TransactionDateSec) {
-                        //Update the existing value. Specifically, update RecordedTransactionSHA1
-                        recordedTransactionsHash = data.Items[0].RecordedTransactionSHA1;
+                        //Update the existing value. Specifically, update RecordedTransactionsSHA1
+                        if(data.Items[0].RecordedTransactionsSHA1) {
+                            recordedTransactionsHash = data.Items[0].RecordedTransactionsSHA1;
+                        }
                         filteredTransactions.forEach(function(item) {
                             recordedTransactionsHash.push(hash(item));
                         });
@@ -144,7 +144,6 @@ exports.processTransactionDataStream = (event, context, callback) => {
                             });
                         }
                     });
-
                 }
             }
         });
@@ -166,7 +165,7 @@ exports.list = (event, context, callback) => {
     console.log("account transactions table name: ", TRANSACTIONS_TABLE);
     const params = {
         TableName: TRANSACTIONS_TABLE,
-        ProjectionExpression: 'TransactionDateSec, #_UUID, UserId, AccountType, Amount, BankName, CreateDateSec, Description, TransactionType',
+        ProjectionExpression: 'TransactionDateSec, #_UUID, UserId, AccountType, Amount, BankName, Description, TransactionType',
         ExpressionAttributeNames: {
             '#_UUID': 'UUID',
         },
@@ -213,7 +212,7 @@ exports.listBetweenDates = (event, context, callback) => {
 
     const params = {
         TableName: TRANSACTIONS_TABLE,
-        ProjectionExpression: 'TransactionDateSec, #_UUID, UserId, AccountType, Amount, BankName, CreateDateSec, Description, TransactionType',
+        ProjectionExpression: 'TransactionDateSec, #_UUID, UserId, AccountType, Amount, BankName, Description, TransactionType',
         ExpressionAttributeNames: {
             '#_UUID': 'UUID',
         },

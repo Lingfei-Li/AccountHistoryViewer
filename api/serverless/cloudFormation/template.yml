@@ -121,7 +121,8 @@ Resources:
               - StreamArn
             BatchSize: 100
             StartingPosition: TRIM_HORIZON
-
+      Policies:
+        - AmazonDynamoDBFullAccess
       Environment:
         Variables:
           ACCOUNT_DAILY_BALANCE_TABLE:

@@ -39,7 +39,7 @@ def put_transactions(bank, transactions):
 
 def get_history_on_date(bank, dateSec):
     response = transactions_table.scan(
-        ProjectionExpression='TransactionDateSec, #_UUID, UserId, AccountType, Amount, BankName, CreateDateSec, Description, TransactionType',
+        ProjectionExpression='TransactionDateSec, #_UUID, UserId, AccountType, Amount, BankName, Description, TransactionType',
         ExpressionAttributeNames={'#_UUID': 'UUID'},
         FilterExpression=Attr('transaction_date_sec').eq(dateSec)
     )

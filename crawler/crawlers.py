@@ -56,7 +56,7 @@ class ChaseCrawler(BankCrawler):
 
                 newTransaction = Transaction(TransactionDateSec=date_sec, UUID=str(uuid1), UserId="lingfei",
                                              AccountType=account, Amount=convert_money_to_float(amount[i].text),
-                                             BankName='Chase', CreateDateSec=int(round(time.time())), Description=desc[i].text,
+                                             BankName='Chase', Description=desc[i].text,
                                              TransactionType=type[i].text)
 
                 transactions.append(newTransaction)
@@ -123,7 +123,7 @@ class USBankCrawler(BankCrawler):
 
                 newTransaction = Transaction(TransactionDateSec=date_sec, UUID=str(uuid1), UserId="lingfei",
                                              AccountType=account, Amount=convert_money_to_float(amount),
-                                             BankName='USBank', CreateDateSec=int(round(time.time())), Description=description,
+                                             BankName='USBank', Description=description,
                                              TransactionType=type)
 
                 transactions.append(newTransaction)
