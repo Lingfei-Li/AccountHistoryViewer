@@ -13,7 +13,7 @@ Parameters:
     Description: The name of the account daily balance table
     Type: String
   AccountMonthlyBalanceTableName:
-    Description: The name of the account montly balance table
+    Description: The name of the account monthly balance table
     Type: String
 
 
@@ -127,6 +127,27 @@ Resources:
         Variables:
           ACCOUNT_DAILY_BALANCE_TABLE:
             Ref: AccountDailyBalanceTableName
+
+  MonthlyBalanceStreamProcessor:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: MonthlyBalanceStreamProcessor
+      Handler: balance.updateMonthlyBalance
+      Runtime: nodejs6.10
+      Events:
+        Stream:
+          Type: DynamoDB
+          Properties:
+            Stream:
+              Fn::GetAtt:
+              - AccountDailyBalanceTable
+              - StreamArn
+            BatchSize: 100
+            StartingPosition: TRIM_HORIZON
+      Policies:
+        - AmazonDynamoDBFullAccess
+      Environment:
+        Variables:
           ACCOUNT_MONTHLY_BALANCE_TABLE:
             Ref: AccountMonthlyBalanceTableName
 
@@ -172,10 +193,10 @@ Resources:
       TableName:
         Ref: AccountDailyBalanceTableName
       AttributeDefinitions:
-        - AttributeName: "BankName"
-          AttributeType: "S"
         - AttributeName: "DateSec"
           AttributeType: "N"
+        - AttributeName: "BankName"
+          AttributeType: "S"
       KeySchema:
         - AttributeName: "DateSec"
           KeyType: "HASH"
@@ -184,5 +205,25 @@ Resources:
       ProvisionedThroughput:
         ReadCapacityUnits: "5"
         WriteCapacityUnits: "5"
+      StreamSpecification:
+        StreamViewType: NEW_IMAGE
 
+  AccountMonthlyBalanceTable:
+    Type: "AWS::DynamoDB::Table"
+    Properties:
+      TableName:
+        Ref: AccountMonthlyBalanceTableName
+      AttributeDefinitions:
+        - AttributeName: "YearMonth"
+          AttributeType: "S"
+        - AttributeName: "BankName"
+          AttributeType: "S"
+      KeySchema:
+        - AttributeName: "YearMonth"
+          KeyType: "HASH"
+        - AttributeName: "BankName"
+          KeyType: "RANGE"
+      ProvisionedThroughput:
+        ReadCapacityUnits: "5"
+        WriteCapacityUnits: "5"
 

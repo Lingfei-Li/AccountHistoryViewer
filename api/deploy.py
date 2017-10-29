@@ -2,13 +2,14 @@ import subprocess
 import json
 import shutil
 import os.path
-from colorprint import print
+from colorama import init, Fore
 
 with open('../config/stack_config.json') as config_file:
     config = json.load(config_file)
 
+init()
 
-print("Copying CloudFormation template file to deployment directory", color='green')
+print(Fore.GREEN + "Copying CloudFormation template file to deployment directory")
 
 
 cfnTemplateSrcPath = os.path.join('.', config['DevelopmentDir'],
@@ -39,20 +40,21 @@ try:
     subprocess.run(["scripts\clean.bat",
                     config["DeploymentBucketName"]], shell=True, check=True)
 
-    print("Serverless Deployment completed", color='green')
+    print(Fore.GREEN + "Serverless Deployment completed")
+
+    print(Fore.CYAN + "Removing CloudFormation and SAM template file from deployment directory")
+
+    if os.path.exists(cfnTemplateDeployPath):
+        os.remove(cfnTemplateDeployPath)
+    if os.path.exists(outputTemplatePath):
+        os.remove(outputTemplatePath)
 except subprocess.CalledProcessError as e:
     out_bytes = e.output       # Output generated before error
     code      = e.returncode   # Return code
     print(out_bytes)
     print(code)
+    print(Fore.RED + "Deployment Failed")
+    exit(0)
 
-print("Removing CloudFormation and SAM template file from deployment directory", color='cyan')
 
-if os.path.exists(cfnTemplateDeployPath):
-    os.remove(cfnTemplateDeployPath)
-if os.path.exists(outputTemplatePath):
-    os.remove(outputTemplatePath)
-
-print("Deployment Succeeded", color='green')
-
-exit(0)
+print(Fore.GREEN + "Deployment Succeeded")

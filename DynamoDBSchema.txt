@@ -14,8 +14,14 @@ LastTransactionDate:
    +TransactionDateSec: N
     RecordedTransactionsSHA1: L
 
-Daily/MonthlyBalance:
+DailyBalance:
    -DateSec: N
    +BankName: S
     Balance: N
     RecordedTransactionsId: L
+
+MonthlyBalance:
+   -YearMonth: S
+   +BankName: S
+    Balance: N
+    DailyBalanceMap: M
