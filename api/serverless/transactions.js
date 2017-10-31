@@ -97,6 +97,7 @@ exports.processTransactionDataStream = (event, context, callback) => {
                         })
                     });
 
+                    console.log("Put transactions to table in groups of 10");
                     for(let i = 0; i < batchWriteRequestArray.length; i += 10) {
                         let transactionsBatchWriteParams = {'RequestItems': {}};
                         transactionsBatchWriteParams['RequestItems'][TRANSACTIONS_TABLE] = batchWriteRequestArray.slice(i, Math.min(i+10, batchWriteRequestArray.length-1));
@@ -108,31 +109,32 @@ exports.processTransactionDataStream = (event, context, callback) => {
                             } else {
                                 console.log("Successfully put transactions to DynamoDB");
 
-                                // Update last transaction date for the bank
-                                let lastTransactionPutParams = {
-                                    TableName: LAST_TRANSACTION_DATE_TABLE,
-                                    Item: {
-                                        "BankName": bankName,
-                                        "TransactionDateSec": lastTransactionDateSec,
-                                        "RecordedTransactionsSHA1": recordedTransactionsHash
-                                    }
-                                };
-
-                                console.log("DynamoDB last transaction date params:", lastTransactionPutParams);
-                                dynamodb.put(lastTransactionPutParams, function(err, data) {
-                                    if(err) {
-                                        console.error("Failed to write last transaction date data");
-                                        console.error(err);
-                                        return callback(internalErrorResponse(err));
-                                    } else {
-                                        console.log("Successfully put last transaction date");
-
-                                        return callback(null, successResponse("Successfully put transactions to DynamoDB"));
-                                    }
-                                });
                             }
                         });
                     }
+
+                    console.log("Update last transaction date for the bank");
+                    let lastTransactionPutParams = {
+                        TableName: LAST_TRANSACTION_DATE_TABLE,
+                        Item: {
+                            "BankName": bankName,
+                            "TransactionDateSec": lastTransactionDateSec,
+                            "RecordedTransactionsSHA1": recordedTransactionsHash
+                        }
+                    };
+
+                    console.log("DynamoDB last transaction date params:", lastTransactionPutParams);
+                    dynamodb.put(lastTransactionPutParams, function(err, data) {
+                        if(err) {
+                            console.error("Failed to write last transaction date data");
+                            console.error(err);
+                            return callback(internalErrorResponse(err));
+                        } else {
+                            console.log("Successfully put last transaction date");
+
+                            return callback(null, successResponse("Successfully put transactions to DynamoDB"));
+                        }
+                    });
                 }
             }
         });

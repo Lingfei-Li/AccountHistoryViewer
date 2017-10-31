@@ -29,6 +29,7 @@ Resources:
     Properties:
       FunctionName: TransactionDataStreamProcessor
       Handler: transactions.processTransactionDataStream
+      Timeout: 10
       Runtime: nodejs6.10
       Events:
         TransactionData:
@@ -49,67 +50,12 @@ Resources:
           ACCOUNT_TRANSACTIONS_TABLE_NAME:
             Ref: AccountTransactionsTableName
 
-  ListAllTransactionsFunction:
-    Type: AWS::Serverless::Function
-    Properties:
-      FunctionName: ListAllTransactionsFunction
-      Handler: transactions.list
-      Runtime: nodejs6.10
-      Events:
-        ListAllTransactions:
-          Type: Api
-          Properties:
-            Path: /transactions
-            Method: get
-      Policies:
-        - AmazonDynamoDBReadOnlyAccess
-      Environment:
-        Variables:
-          ACCOUNT_TRANSACTIONS_TABLE_NAME:
-            Ref: AccountTransactionsTableName
-
-  ListAllTransactionsFunction:
-    Type: AWS::Serverless::Function
-    Properties:
-      FunctionName: ListAllTransactionsFunction
-      Handler: transactions.list
-      Runtime: nodejs6.10
-      Events:
-        ListAllTransactions:
-          Type: Api
-          Properties:
-            Path: /transactions
-            Method: get
-      Policies:
-        - AmazonDynamoDBReadOnlyAccess
-      Environment:
-        Variables:
-          ACCOUNT_TRANSACTIONS_TABLE_NAME:
-            Ref: AccountTransactionsTableName
-  ListDateRangeTransactionsFunction:
-    Type: AWS::Serverless::Function
-    Properties:
-      FunctionName: ListDateRangeTransactionsFunction
-      Handler: transactions.listBetweenDates
-      Runtime: nodejs6.10
-      Events:
-        ListDateRange:
-          Type: Api
-          Properties:
-            Path: /transactions/{startDateSecStr}/{endDateSecStr}
-            Method: get
-      Policies:
-        - AmazonDynamoDBReadOnlyAccess
-      Environment:
-        Variables:
-          ACCOUNT_TRANSACTIONS_TABLE_NAME:
-            Ref: AccountTransactionsTableName
-
   DailyBalanceStreamProcessor:
     Type: AWS::Serverless::Function
     Properties:
       FunctionName: DailyBalanceStreamProcessor
       Handler: balance.updateDailyBalance
+      Timeout: 10
       Runtime: nodejs6.10
       Events:
         Stream:
@@ -133,6 +79,7 @@ Resources:
     Properties:
       FunctionName: MonthlyBalanceStreamProcessor
       Handler: balance.updateMonthlyBalance
+      Timeout: 10
       Runtime: nodejs6.10
       Events:
         Stream:
@@ -150,6 +97,45 @@ Resources:
         Variables:
           ACCOUNT_MONTHLY_BALANCE_TABLE:
             Ref: AccountMonthlyBalanceTableName
+
+  ListAllTransactionsFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: ListAllTransactionsFunction
+      Handler: transactions.list
+      Runtime: nodejs6.10
+      Events:
+        ListAllTransactions:
+          Type: Api
+          Properties:
+            Path: /transactions
+            Method: get
+      Policies:
+        - AmazonDynamoDBReadOnlyAccess
+      Environment:
+        Variables:
+          ACCOUNT_TRANSACTIONS_TABLE_NAME:
+            Ref: AccountTransactionsTableName
+
+  ListDateRangeTransactionsFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: ListDateRangeTransactionsFunction
+      Handler: transactions.listBetweenDates
+      Runtime: nodejs6.10
+      Events:
+        ListDateRange:
+          Type: Api
+          Properties:
+            Path: /transactions/{startDateSecStr}/{endDateSecStr}
+            Method: get
+      Policies:
+        - AmazonDynamoDBReadOnlyAccess
+      Environment:
+        Variables:
+          ACCOUNT_TRANSACTIONS_TABLE_NAME:
+            Ref: AccountTransactionsTableName
+
 
   AccountTransactionsTable:
     Type: "AWS::DynamoDB::Table"

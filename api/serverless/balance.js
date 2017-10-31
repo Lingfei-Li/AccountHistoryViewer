@@ -10,24 +10,44 @@ const MONTHLY_BALANCE_TABLE = process.env.ACCOUNT_MONTHLY_BALANCE_TABLE;
 const dynamodb = new AWS.DynamoDB.DocumentClient();
 
 exports.updateDailyBalance = (event, context, callback) => {
-    console.log("daily balance table:", DAILY_BALANCE_TABLE);
-    console.log("updating daily balance:", event);
+    console.log("Updating daily balance. Record count: " + event.Records.length);
 
+
+    let tempDailyBalance = {};
+    let tempTransactionIds = {};
     event.Records.forEach((record) => {
-        console.log('Stream record: ', JSON.stringify(record, null, 2));
         if (record.eventName === 'INSERT') {
             const transaction = record.dynamodb.NewImage;
             const id = transaction.UUID.S;
             const bankName = transaction.BankName.S;
             const transactionDateSec = parseInt(transaction.TransactionDateSec.N);
             const amount = parseFloat(transaction.Amount.N);
+
+            if (!tempDailyBalance.hasOwnProperty(transactionDateSec)) {
+                tempDailyBalance[transactionDateSec] = {};
+                tempTransactionIds[transactionDateSec] = {};
+            }
+            if (!tempDailyBalance[transactionDateSec].hasOwnProperty(bankName)) {
+                tempDailyBalance[transactionDateSec][bankName] = 0;
+                tempTransactionIds[transactionDateSec][bankName] = [];
+            }
+            tempDailyBalance[transactionDateSec][bankName] += amount;
+            tempTransactionIds[transactionDateSec][bankName].push(id);
+        }
+    });
+
+    for(const dateSecStr in tempDailyBalance) if(tempDailyBalance.hasOwnProperty(dateSecStr)) {
+        const dateSec = parseInt(dateSecStr);
+        for(const bankName in tempDailyBalance[dateSecStr]) if(tempDailyBalance[dateSecStr].hasOwnProperty(bankName)) {
+            console.log(typeof dateSecStr);
+            console.log('dateSecStr', dateSecStr, 'dateSec', dateSec, 'bankName', bankName);
             let params = {
                 TableName: DAILY_BALANCE_TABLE,
                 ProjectionExpression: 'BankName, DateSec, Balance, RecordedTransactionsId',
-                KeyConditionExpression: 'BankName = :bankName and DateSec = :transactionDateSec',
+                KeyConditionExpression: 'BankName = :bankName and DateSec = :dateSec',
                 ExpressionAttributeValues: {
                     ":bankName": bankName,
-                    ":transactionDateSec": transactionDateSec
+                    ":dateSec": dateSec
                 }
             };
             console.log("Start query daily balance table for current data");
@@ -43,9 +63,9 @@ exports.updateDailyBalance = (event, context, callback) => {
                             TableName: DAILY_BALANCE_TABLE,
                             Item: {
                                 BankName: bankName,
-                                DateSec: transactionDateSec,
-                                Balance: amount,
-                                RecordedTransactionsId: [id]
+                                DateSec: dateSec,
+                                Balance: tempDailyBalance[dateSec][bankName],
+                                RecordedTransactionsId: tempTransactionIds[dateSec][bankName]
                             }
                         };
                         dynamodb.put(params, function(err, data) {
@@ -65,14 +85,13 @@ exports.updateDailyBalance = (event, context, callback) => {
                         const dailyBalanceDataItem = data.Items[0];
                         const balance = parseFloat(dailyBalanceDataItem.Balance);
                         let recordedTransactionsId = dailyBalanceDataItem.RecordedTransactionsId;
-                        recordedTransactionsId.push(id);
                         let params = {
                             TableName: DAILY_BALANCE_TABLE,
                             Item: {
                                 BankName: bankName,
-                                DateSec: transactionDateSec,
-                                Balance: balance + amount,
-                                RecordedTransactionsId: recordedTransactionsId
+                                DateSec: dateSec,
+                                Balance: balance + tempDailyBalance[dateSec][bankName],
+                                RecordedTransactionsId: recordedTransactionsId.concat(tempTransactionIds[dateSec][bankName])
                             }
                         };
                         dynamodb.put(params, function(err, data) {
@@ -82,24 +101,22 @@ exports.updateDailyBalance = (event, context, callback) => {
                                 console.error("error:\n", err);
                                 callback(new Error(err));
                             } else {
-                                console.log("Data successfully update in daily balance table: ");
-                                console.log(JSON.stringify(data, null, 2));
+                                console.log("Data successfully update in daily balance table");
                             }
                         });
                     }
                 }
             });
         }
-    });
+    }
 };
 
 
 exports.updateMonthlyBalance = (event, context, callback) => {
-    console.log("monthly balance table:", MONTHLY_BALANCE_TABLE);
-    console.log("updating monthly balance:", event);
+    console.log("Updating monthly balance. Count: ", event.Records.length);
 
+    //TODO: fix bug - race condition
     event.Records.forEach((record) => {
-        console.log('Stream record: ', JSON.stringify(record, null, 2));
         if (record.eventName === 'INSERT' || record.eventName === 'MODIFY') {
             const dailyBalanceDataItem = record.dynamodb.NewImage;
             const dateSec = parseInt(dailyBalanceDataItem.DateSec.N);

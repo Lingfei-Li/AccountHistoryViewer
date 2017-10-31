@@ -33,9 +33,9 @@ def put_transactions(transactions):
 # Testing: put a mock record to the kinesis stream
 if __name__ == '__main__':
     t = int(time.time())
-    t_override = 1600319862
+    t_override = 1600419862
     transactions = []
-    for i in range(50):
+    for i in range(10):
         trans = Transaction(TransactionDateSec=t_override, UUID='UUID-'+str(t+i), UserId='UserId-1234', AccountType='AccountType-checking',
                         Amount=1, BankName='chase', Description='Description-something',
                         TransactionType='TransactionType-debit')
