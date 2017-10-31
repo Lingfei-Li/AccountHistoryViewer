@@ -1,8 +1,9 @@
 from selenium import webdriver
 from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.common.by import By
-from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.keys import Keys
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
 
 from utils import convert_to_date_sec
 from utils import convert_money_to_float
@@ -25,8 +26,10 @@ class ChaseCrawler(BankCrawler):
         driver.implicitly_wait(100)
 
         driver.get("https://secure07a.chase.com/")
+        frame = driver.find_element_by_css_selector("#logonbox")
+        driver.switch_to.frame(frame)
         driver.find_element_by_id("userId-input-field").send_keys(username)
-        driver.find_element_by_id("password-input-field").send_keys(password)
+        driver.find_element_by_css_selector("#password-input-field").send_keys(password)
         driver.find_element_by_id("signin-button").click()
         self.driver = driver
 
@@ -54,7 +57,7 @@ class ChaseCrawler(BankCrawler):
                     print("Cannot parse date: ", date_str[i].text)
                     continue
 
-                newTransaction = Transaction(TransactionDateSec=date_sec, UUID=str(uuid1), UserId="lingfei",
+                newTransaction = Transaction(TransactionDateSec=date_sec, UUID=str(uuid1()), UserId="lingfei",
                                              AccountType=account, Amount=convert_money_to_float(amount[i].text),
                                              BankName='Chase', Description=desc[i].text,
                                              TransactionType=type[i].text)
@@ -92,7 +95,11 @@ class USBankCrawler(BankCrawler):
                                                 "div.lw-positionRelative.lw-AuthContainer.lw-AuthContainerStepUp > "
                                                 "div > div:nth-child(1) > div > div:nth-child(1) > label"
                                                 ).get_attribute('innerHTML')
-        driver.find_element_by_css_selector("#divAlphaNum > input").send_keys(questions[q])
+        ans = ""
+        for question, answer in questions.items():
+            if question in q:
+                ans = answer
+        driver.find_element_by_css_selector("#divAlphaNum > input").send_keys(ans)
         driver.find_element_by_css_selector("#divAlphaNum > input").send_keys(Keys.RETURN)
 
         driver.find_element_by_id("txtPassword").send_keys(password)

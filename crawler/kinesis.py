@@ -16,7 +16,7 @@ def describe_stream():
 
 
 def put_transactions(transactions):
-    log.info("Putting transactions to Kinesis stream")
+    log.info("Putting {} transactions to Kinesis stream".format(len(transactions)))
     if len(transactions) == 0:
         return
 
@@ -34,10 +34,12 @@ def put_transactions(transactions):
 if __name__ == '__main__':
     t = int(time.time())
     t_override = 1600319862
-    trans = Transaction(TransactionDateSec=t_override, UUID='UUID-'+str(t), UserId='UserId-1234', AccountType='AccountType-checking',
-                    Amount=1199, BankName='chase', Description='Description-something',
-                    TransactionType='TransactionType-debit')
-    transactions = [trans]
+    transactions = []
+    for i in range(50):
+        trans = Transaction(TransactionDateSec=t_override, UUID='UUID-'+str(t+i), UserId='UserId-1234', AccountType='AccountType-checking',
+                        Amount=1, BankName='chase', Description='Description-something',
+                        TransactionType='TransactionType-debit')
+        transactions.append(trans)
     put_response = put_transactions(transactions)
     if put_response['FailedRecordCount'] != 0:
        log.error( "Failed to put record to Kinesis. Message: " )

@@ -18,11 +18,12 @@ const dynamodb = new AWS.DynamoDB.DocumentClient();
 * */
 exports.processTransactionDataStream = (event, context, callback) => {
     let records = {};
+    console.log("Records:", event.Records);
     event.Records.forEach((record) => {
         // Kinesis data is base64 encoded so decode here
         const payloadStr = new Buffer(record.kinesis.data, 'base64').toString('ascii');
         const payload = JSON.parse(payloadStr);
-        if(!records[payload.Bankname]) {
+        if(!records.hasOwnProperty(payload.BankName)) {
             records[payload.BankName] = [];
         }
         records[payload.BankName].push(payload);
@@ -46,18 +47,11 @@ exports.processTransactionDataStream = (event, context, callback) => {
                 let filteredTransactions;
                 if(data.Items.length === 0) {
                     console.log(`Last transaction date for bank ${bankName} is not present yet`);
-
                     filteredTransactions = transactions;
                 } else {
-                    console.log("data.Items[0]:", data.Items[0]);
                     let lastTransactionDateSec = data.Items[0].TransactionDateSec;
                     let recordedTransactionsHash = data.Items[0].RecordedTransactionsSHA1;
                     console.log(`Last transaction date for bank ${bankName} is `, lastTransactionDateSec);
-
-                    console.log("recorded transactions sha1:");
-                    data.Items[0].RecordedTransactionsSHA1.forEach(function(item) {
-                        console.log(item);
-                    });
 
                     filteredTransactions = transactions.filter(function(item) {
                         return item.TransactionDateSec >= lastTransactionDateSec && !recordedTransactionsHash.includes(hash(item));
@@ -69,10 +63,7 @@ exports.processTransactionDataStream = (event, context, callback) => {
                     return callback(null, successResponse("All transactions have already been recorded"));
                 }
                 else {
-                    console.log("Filtered transactions:");
-                    filteredTransactions.forEach(function(item) {
-                        console.log(item);
-                    });
+                    console.log("Filtered transactions number:" + filteredTransactions.length);
 
                     let lastTransactionDateSec = filteredTransactions.reduce(function(result, currValue) {
                         return Math.max(result, currValue.TransactionDateSec);
@@ -96,11 +87,6 @@ exports.processTransactionDataStream = (event, context, callback) => {
                         });
                     }
 
-                    console.log("Transactions hash:");
-                    recordedTransactionsHash.forEach(function(item) {
-                        console.log(item);
-                    });
-
                     // Put the filtered transactions to AccountTransactions table
                     let batchWriteRequestArray = [];
                     filteredTransactions.forEach(function(item) {
@@ -110,40 +96,43 @@ exports.processTransactionDataStream = (event, context, callback) => {
                             }
                         })
                     });
-                    let transactionsBatchWriteParams = {'RequestItems': {}};
-                    transactionsBatchWriteParams['RequestItems'][TRANSACTIONS_TABLE] = batchWriteRequestArray;
-                    dynamodb.batchWrite(transactionsBatchWriteParams, function(err, data) {
-                        if(err) {
-                            console.error("Failed to batch write last transaction date data");
-                            console.error(err);
-                            return callback(internalErrorResponse(err));
-                        } else {
-                            console.log("Successfully put transactions to DynamoDB");
 
-                            // Update last transaction date for the bank
-                            let lastTransactionPutParams = {
-                                TableName: LAST_TRANSACTION_DATE_TABLE,
-                                Item: {
-                                    "BankName": bankName,
-                                    "TransactionDateSec": lastTransactionDateSec,
-                                    "RecordedTransactionsSHA1": recordedTransactionsHash
-                                }
-                            };
+                    for(let i = 0; i < batchWriteRequestArray.length; i += 10) {
+                        let transactionsBatchWriteParams = {'RequestItems': {}};
+                        transactionsBatchWriteParams['RequestItems'][TRANSACTIONS_TABLE] = batchWriteRequestArray.slice(i, Math.min(i+10, batchWriteRequestArray.length-1));
+                        dynamodb.batchWrite(transactionsBatchWriteParams, function(err, data) {
+                            if(err) {
+                                console.error("Failed to batch write transaction data");
+                                console.error(err);
+                                return callback(internalErrorResponse(err));
+                            } else {
+                                console.log("Successfully put transactions to DynamoDB");
 
-                            console.log("DynamoDB last transaction date params:", lastTransactionPutParams);
-                            dynamodb.put(lastTransactionPutParams, function(err, data) {
-                                if(err) {
-                                    console.error("Failed to batch write last transaction date data");
-                                    console.error(err);
-                                    return callback(internalErrorResponse(err));
-                                } else {
-                                    console.log("Successfully put last transaction date");
+                                // Update last transaction date for the bank
+                                let lastTransactionPutParams = {
+                                    TableName: LAST_TRANSACTION_DATE_TABLE,
+                                    Item: {
+                                        "BankName": bankName,
+                                        "TransactionDateSec": lastTransactionDateSec,
+                                        "RecordedTransactionsSHA1": recordedTransactionsHash
+                                    }
+                                };
 
-                                    return callback(null, successResponse("Successfully put transactions to DynamoDB"));
-                                }
-                            });
-                        }
-                    });
+                                console.log("DynamoDB last transaction date params:", lastTransactionPutParams);
+                                dynamodb.put(lastTransactionPutParams, function(err, data) {
+                                    if(err) {
+                                        console.error("Failed to write last transaction date data");
+                                        console.error(err);
+                                        return callback(internalErrorResponse(err));
+                                    } else {
+                                        console.log("Successfully put last transaction date");
+
+                                        return callback(null, successResponse("Successfully put transactions to DynamoDB"));
+                                    }
+                                });
+                            }
+                        });
+                    }
                 }
             }
         });

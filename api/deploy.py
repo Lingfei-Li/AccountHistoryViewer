@@ -9,7 +9,7 @@ with open('../config/stack_config.json') as config_file:
 
 init()
 
-print(Fore.GREEN + "Copying CloudFormation template file to deployment directory")
+print(Fore.CYAN + "Copying CloudFormation template file to deployment directory")
 
 
 cfnTemplateSrcPath = os.path.join('.', config['DevelopmentDir'],
