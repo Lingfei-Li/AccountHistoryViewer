@@ -12,7 +12,6 @@ const dynamodb = new AWS.DynamoDB.DocumentClient();
 exports.updateDailyBalance = (event, context, callback) => {
     console.log("Updating daily balance. Record count: " + event.Records.length);
 
-
     let tempDailyBalance = {};
     let tempTransactionIds = {};
     event.Records.forEach((record) => {
@@ -41,7 +40,7 @@ exports.updateDailyBalance = (event, context, callback) => {
         for(const bankName in tempDailyBalance[dateSecStr]) if(tempDailyBalance[dateSecStr].hasOwnProperty(bankName)) {
             console.log(typeof dateSecStr);
             console.log('dateSecStr', dateSecStr, 'dateSec', dateSec, 'bankName', bankName);
-            let params = {
+            const queryParams = {
                 TableName: DAILY_BALANCE_TABLE,
                 ProjectionExpression: 'BankName, DateSec, Balance, RecordedTransactionsId',
                 KeyConditionExpression: 'BankName = :bankName and DateSec = :dateSec',
@@ -51,15 +50,15 @@ exports.updateDailyBalance = (event, context, callback) => {
                 }
             };
             console.log("Start query daily balance table for current data");
-            dynamodb.query(params, function(err, data) {
+            dynamodb.query(queryParams, function(err, data) {
                 if(err) {
-                    console.error("Got an error querying daily balance");
-                    console.error(err);
+                    console.error("Got an error querying daily balance with params:");
+                    console.error(JSON.stringify(queryParams, null, 2));
                     callback(new Error(err));
                 } else {
                     if(data.Items.length === 0) {
                         console.log("No daily balance data for this date yet. Initialize the balance data.");
-                        let params = {
+                        const putParams = {
                             TableName: DAILY_BALANCE_TABLE,
                             Item: {
                                 BankName: bankName,
@@ -68,11 +67,10 @@ exports.updateDailyBalance = (event, context, callback) => {
                                 RecordedTransactionsId: tempTransactionIds[dateSec][bankName]
                             }
                         };
-                        dynamodb.put(params, function(err, data) {
+                        dynamodb.put(putParams, function(err, data) {
                             if(err) {
                                 console.error("Failed to put the data: ");
-                                console.error(JSON.stringify(params.Item, null, 2));
-                                console.error("error:\n", err);
+                                console.error(JSON.stringify(putParams, null, 2));
                                 callback(new Error(err));
                             } else {
                                 console.log("Data successfully put in daily balance table");
@@ -80,12 +78,14 @@ exports.updateDailyBalance = (event, context, callback) => {
                         });
                     } else {
                         if(data.Items.length !== 1) {
+                            console.error("data.Items has more than 1 records:");
+                            console.error(JSON.stringify(data.Items, null, 2));
                             callback(new Error("Daily balance retrieved from DynamoDB has more than 1 value"));
                         }
                         const dailyBalanceDataItem = data.Items[0];
                         const balance = parseFloat(dailyBalanceDataItem.Balance);
                         let recordedTransactionsId = dailyBalanceDataItem.RecordedTransactionsId;
-                        let params = {
+                        const putParams = {
                             TableName: DAILY_BALANCE_TABLE,
                             Item: {
                                 BankName: bankName,
@@ -94,11 +94,10 @@ exports.updateDailyBalance = (event, context, callback) => {
                                 RecordedTransactionsId: recordedTransactionsId.concat(tempTransactionIds[dateSec][bankName])
                             }
                         };
-                        dynamodb.put(params, function(err, data) {
+                        dynamodb.put(putParams, function(err, data) {
                             if(err) {
                                 console.error("Failed to put the data: ");
-                                console.error(JSON.stringify(params.Item, null, 2));
-                                console.error("error:\n", err);
+                                console.error(JSON.stringify(putParams, null, 2));
                                 callback(new Error(err));
                             } else {
                                 console.log("Data successfully update in daily balance table");
@@ -115,7 +114,8 @@ exports.updateDailyBalance = (event, context, callback) => {
 exports.updateMonthlyBalance = (event, context, callback) => {
     console.log("Updating monthly balance. Count: ", event.Records.length);
 
-    //TODO: fix bug - race condition
+    let tempMonthlyBalance = {};     // Only used when no data exists for the current yearMonth+bankname
+    let tempDailyBalanceMapping = {};
     event.Records.forEach((record) => {
         if (record.eventName === 'INSERT' || record.eventName === 'MODIFY') {
             const dailyBalanceDataItem = record.dynamodb.NewImage;
@@ -125,7 +125,23 @@ exports.updateMonthlyBalance = (event, context, callback) => {
             const bankName = dailyBalanceDataItem.BankName.S;
             const dailyBalance = parseFloat(dailyBalanceDataItem.Balance.N);
 
-            let params = {
+            if (!tempMonthlyBalance.hasOwnProperty(yearMonth)) {
+                tempMonthlyBalance[yearMonth] = {};
+                tempDailyBalanceMapping[yearMonth] = {};
+            }
+            if (!tempMonthlyBalance[yearMonth].hasOwnProperty(bankName)) {
+                tempMonthlyBalance[yearMonth][bankName] = 0;
+                tempDailyBalanceMapping[yearMonth][bankName] = {};
+            }
+            tempMonthlyBalance[yearMonth][bankName] += dailyBalance;
+            tempDailyBalanceMapping[yearMonth][bankName][date] = dailyBalance;
+        }
+    });
+
+    for(const yearMonth in tempMonthlyBalance) if(tempMonthlyBalance.hasOwnProperty(yearMonth)) {
+        for (const bankName in tempMonthlyBalance[yearMonth]) if (tempMonthlyBalance[yearMonth].hasOwnProperty(bankName)) {
+            console.log("Start query monthly balance table for " + yearMonth + bankName);
+            const queryParams = {
                 TableName: MONTHLY_BALANCE_TABLE,
                 ProjectionExpression: 'BankName, YearMonth, Balance, DailyBalanceMap',
                 KeyConditionExpression: 'BankName = :bankName and YearMonth = :yearMonth',
@@ -134,36 +150,30 @@ exports.updateMonthlyBalance = (event, context, callback) => {
                     ":yearMonth":yearMonth
                 }
             };
-
-            console.log("Start query monthly balance table for current data");
-            dynamodb.query(params, function(err, data) {
+            dynamodb.query(queryParams, function(err, data) {
                 if(err) {
-                    console.error("Got an error querying monthly balance");
-                    console.error(err);
+                    console.error("Got an error querying monthly balance with params:");
+                    console.error(JSON.stringify(queryParams, null, 2));
                     callback(new Error(err));
                 } else {
                     if(data.Items.length === 0) {
                         console.log("No monthly balance data for this year-month yet. Initialize the balance data.");
 
-                        const dailyBalanceMap = {};
-                        dailyBalanceMap[date] = dailyBalance;
-                        let params = {
+                        const putParams = {
                             TableName: MONTHLY_BALANCE_TABLE,
                             Item: {
                                 YearMonth: yearMonth,
                                 BankName: bankName,
-                                Balance: dailyBalance,
-                                DailyBalanceMap: dailyBalanceMap
+                                Balance: tempMonthlyBalance[yearMonth][bankName],
+                                DailyBalanceMap: tempDailyBalanceMapping[yearMonth][bankName]
                             }
                         };
-                        dynamodb.put(params, function(err, data) {
+                        dynamodb.put(putParams, function(err, data) {
                             if(err) {
-                                console.error("Failed to put the data: ");
-                                console.error(JSON.stringify(params.Item, null, 2));
-                                console.error("error:\n", err);
+                                console.error("Failed to put the data");
                                 callback(new Error(err));
                             } else {
-                                console.log("Data successfully put in daily balance table");
+                                console.log("Data successfully put to monthly balance table");
                             }
                         });
                     } else {
@@ -175,14 +185,17 @@ exports.updateMonthlyBalance = (event, context, callback) => {
                         console.log("daily balance map:");
                         console.log(monthlyBalanceDataItem.DailyBalanceMap);
 
-                        dailyBalanceMap[date] = dailyBalance;
-
-                        let monthlyBalance = 0;
-                        for(let key in dailyBalanceMap) {
-                            monthlyBalance += dailyBalanceMap[key];
+                        for(const date in tempDailyBalanceMapping[yearMonth][bankName])
+                            if(tempDailyBalanceMapping[yearMonth][bankName].hasOwnProperty(date)) {
+                            dailyBalanceMap[date] = tempDailyBalanceMapping[yearMonth][bankName][date];
                         }
 
-                        let params = {
+                        let monthlyBalance = 0;
+                        for(const date in dailyBalanceMap) if(dailyBalanceMap.hasOwnProperty(date)) {
+                            monthlyBalance += dailyBalanceMap[date];
+                        }
+
+                        const putParams = {
                             TableName: MONTHLY_BALANCE_TABLE,
                             Item: {
                                 YearMonth: yearMonth,
@@ -191,11 +204,11 @@ exports.updateMonthlyBalance = (event, context, callback) => {
                                 DailyBalanceMap: dailyBalanceMap
                             }
                         };
-                        dynamodb.put(params, function(err, data) {
+
+                        dynamodb.put(putParams, function(err, data) {
                             if(err) {
                                 console.error("Failed to put the data: ");
-                                console.error(JSON.stringify(params.Item, null, 2));
-                                console.error("error:\n", err);
+                                console.error(JSON.stringify(putParams, null, 2));
                                 callback(new Error(err));
                             } else {
                                 console.log("Data successfully update in monthly balance table");
@@ -204,8 +217,10 @@ exports.updateMonthlyBalance = (event, context, callback) => {
                     }
                 }
             });
+
+
         }
-    });
+    }
 };
 
 
