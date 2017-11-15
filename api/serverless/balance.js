@@ -35,9 +35,9 @@ exports.updateDailyBalance = (event, context, callback) => {
         }
     });
 
-    for(const dateSecStr in tempDailyBalance) if(tempDailyBalance.hasOwnProperty(dateSecStr)) {
+    for(const dateSecStr in tempDailyBalance) if(tempDailyBalance.hasOwnProperty(dateSecStr) && tempDailyBalance[dateSecStr]) {
         const dateSec = parseInt(dateSecStr);
-        for(const bankName in tempDailyBalance[dateSecStr]) if(tempDailyBalance[dateSecStr].hasOwnProperty(bankName)) {
+        for(const bankName in tempDailyBalance[dateSecStr]) if(tempDailyBalance[dateSecStr].hasOwnProperty(bankName) && tempDailyBalance[dateSecStr][bankName]) {
             console.log(typeof dateSecStr);
             console.log('dateSecStr', dateSecStr, 'dateSec', dateSec, 'bankName', bankName);
             const queryParams = {
@@ -63,13 +63,13 @@ exports.updateDailyBalance = (event, context, callback) => {
                             Item: {
                                 BankName: bankName,
                                 DateSec: dateSec,
-                                Balance: tempDailyBalance[dateSec][bankName],
-                                RecordedTransactionsId: tempTransactionIds[dateSec][bankName]
+                                Balance: tempDailyBalance[dateSecStr][bankName],
+                                RecordedTransactionsId: tempTransactionIds[dateSecStr][bankName]
                             }
                         };
                         dynamodb.put(putParams, function(err, data) {
                             if(err) {
-                                console.error("Failed to put the data: ");
+                                console.error("Failed to put the balance data: ");
                                 console.error(JSON.stringify(putParams, null, 2));
                                 callback(new Error(err));
                             } else {
@@ -90,8 +90,8 @@ exports.updateDailyBalance = (event, context, callback) => {
                             Item: {
                                 BankName: bankName,
                                 DateSec: dateSec,
-                                Balance: balance + tempDailyBalance[dateSec][bankName],
-                                RecordedTransactionsId: recordedTransactionsId.concat(tempTransactionIds[dateSec][bankName])
+                                Balance: balance + tempDailyBalance[dateSecStr][bankName],
+                                RecordedTransactionsId: recordedTransactionsId.concat(tempTransactionIds[dateSecStr][bankName])
                             }
                         };
                         dynamodb.put(putParams, function(err, data) {
@@ -138,8 +138,8 @@ exports.updateMonthlyBalance = (event, context, callback) => {
         }
     });
 
-    for(const yearMonth in tempMonthlyBalance) if(tempMonthlyBalance.hasOwnProperty(yearMonth)) {
-        for (const bankName in tempMonthlyBalance[yearMonth]) if (tempMonthlyBalance[yearMonth].hasOwnProperty(bankName)) {
+    for(const yearMonth in tempMonthlyBalance) if(tempMonthlyBalance.hasOwnProperty(yearMonth) && tempMonthlyBalance[yearMonth]) {
+        for (const bankName in tempMonthlyBalance[yearMonth]) if (tempMonthlyBalance[yearMonth].hasOwnProperty(bankName) && tempMonthlyBalance[yearMonth][bankName]) {
             console.log("Start query monthly balance table for " + yearMonth + bankName);
             const queryParams = {
                 TableName: MONTHLY_BALANCE_TABLE,

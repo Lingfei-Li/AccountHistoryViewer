@@ -23,6 +23,7 @@ def put_transactions(transactions):
 
     records = []
     for t in transactions:
+        log.plain("{}".format("{} {}".format(t.getField('Amount'), t.getField('Description'))))
         records.append({
             'Data': json.dumps(t.getItem()),
             'PartitionKey': t.getField('UUID')
