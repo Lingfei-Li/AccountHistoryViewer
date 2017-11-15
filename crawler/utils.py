@@ -40,7 +40,7 @@ def convert_date_sec_to_datetime(sec):
 
 
 def convert_money_to_float(money):
-    return str(money).replace("−", "-").replace("$", "").replace(",", "")
+    return float(str(money).replace("−", "-").replace("$", "").replace(",", ""))
 
 
 # Helper class to convert a DynamoDB item to JSON.

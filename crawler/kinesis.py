@@ -11,6 +11,7 @@ kinesis_client = boto3.client('kinesis', region_name='us-west-2')
 
 stream_name = app_config['TransactionDataStreamName']
 
+
 def describe_stream():
     response = kinesis_client.describe_stream(StreamName=stream_name)
     log.plain(response)
@@ -29,24 +30,24 @@ def put_transactions(transactions):
             'PartitionKey': t.getField('UUID')
         })
 
-    put_response = kinesis_client.put_records(StreamName=stream_name, Records=records)
-    return put_response
+    return kinesis_client.put_records(StreamName=stream_name, Records=records)
 
 # Testing: put a mock record to the kinesis stream
 if __name__ == '__main__':
+    data_cnt = 10
     uuid_base = int(datetime.datetime(2020, 8, 2).timestamp())
     uuid_base_time = int(time.time())
-    t = int(datetime.datetime(2020, 8, 2).timestamp())
-    transactions = []
-    for i in range(10):
-        trans = Transaction(TransactionDateSec=t, UUID='UUID-'+str(uuid_base+i), UserId='UserId-1234', AccountType='AccountType-checking',
-                        Amount=1, BankName='chase', Description='Description-something',
-                        TransactionType='TransactionType-debit')
-        transactions.append(trans)
-    put_response = put_transactions(transactions)
+    transaction_date_sec = int(datetime.datetime(2020, 8, 2).timestamp())
+    mock_transactions = []
+    for i in range(data_cnt):
+        trans = Transaction(TransactionDateSec=transaction_date_sec, UUID='UUID-'+str(uuid_base+i), UserId='UserId-1234',
+                            AccountType='AccountType-checking', Amount=1, BankName='chase',
+                            Description='Description-something', TransactionType='TransactionType-debit')
+        mock_transactions.append(trans)
+    put_response = put_transactions(mock_transactions)
     if put_response['FailedRecordCount'] != 0:
-       log.error( "Failed to put record to Kinesis. Message: " )
+        log.error("Failed to put record to Kinesis. Message: ", put_response)
     else:
-       log.success("Successfully put data to Kinesis")
+        log.success("Successfully put {} records to Kinesis".format(data_cnt))
 
 

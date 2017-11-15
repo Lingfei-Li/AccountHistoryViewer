@@ -128,15 +128,15 @@ class USBankCrawler(BankCrawler):
                         print("Cannot parse date: ", date_str)
                     continue
 
-                newTransaction = Transaction(TransactionDateSec=date_sec, UUID=str(uuid1), UserId="lingfei",
-                                             AccountType=account, Amount=convert_money_to_float(amount),
-                                             BankName='USBank', Description=description,
-                                             TransactionType=type)
+                new_transaction = Transaction(TransactionDateSec=date_sec, UUID=str(uuid1), UserId="lingfei",
+                                              AccountType=account, Amount=convert_money_to_float(amount),
+                                              BankName='USBank', Description=description,
+                                              TransactionType=type)
 
-                transactions.append(newTransaction)
+                transactions.append(new_transaction)
         return transactions
 
-    def readCSVThenDelete(self, account):
+    def read_csv_then_delete(self, account):
         if account == 'checking':
             filepath = 'D:\\export.csv'
         else:
@@ -144,7 +144,6 @@ class USBankCrawler(BankCrawler):
         transactions = self.readCSV(account, filepath)
         os.remove(filepath)
         return transactions
-
 
     def start_extraction(self):
         # Checking account
@@ -166,7 +165,7 @@ class USBankCrawler(BankCrawler):
         time.sleep(2)
 
         # Parse the downloaded csv and read the transactions
-        checking_transactions = self.readCSVThenDelete('checking')
-        savings_transactions = self.readCSVThenDelete('savings')
+        checking_transactions = self.read_csv_then_delete('checking')
+        savings_transactions = self.read_csv_then_delete('savings')
         return checking_transactions + savings_transactions
 

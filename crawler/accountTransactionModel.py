@@ -1,6 +1,3 @@
-
-
-
 class Transaction:
     def __init__(self, TransactionDateSec, UUID, UserId, AccountType, Amount, BankName, Description, TransactionType):
         self.item = dict()
