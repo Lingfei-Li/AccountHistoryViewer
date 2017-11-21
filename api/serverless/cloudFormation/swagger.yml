@@ -1,0 +1,198 @@
+swagger: "2.0"
+info:
+  description: "This is the API interface for the Project Erebor"
+  version: "1.0.0"
+  title: "Project Erebor"
+  contact:
+    email: "cslilingfei@outlook.com"
+  license:
+    name: "Apache 2.0"
+    url: "http://www.apache.org/licenses/LICENSE-2.0.html"
+basePath: "/"
+tags:
+- name: "transactions"
+  description: "Transactions"
+schemes:
+- "http"
+paths:
+  /transactions:
+    options:
+      summary: CORS support
+      description: |
+        Enable CORS by returning correct headers
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      tags:
+        - CORS
+      x-amazon-apigateway-integration:
+        type: mock
+        requestTemplates:
+          application/json: |
+            {
+              "statusCode" : 200
+            }
+        responses:
+          "default":
+            statusCode: "200"
+            responseParameters:
+              method.response.header.Access-Control-Allow-Headers : "'Content-Type,X-Amz-Date,Authorization,X-Api-Key'"
+              method.response.header.Access-Control-Allow-Methods : "'*'"
+              method.response.header.Access-Control-Allow-Origin : "'*'"
+            responseTemplates:
+              application/json: |
+                {}
+      responses:
+        200:
+          description: Default response for CORS method
+          headers:
+            Access-Control-Allow-Headers:
+              type: "string"
+            Access-Control-Allow-Methods:
+              type: "string"
+            Access-Control-Allow-Origin:
+              type: "string"
+    get:
+      summary: Transactions
+      description: |
+        Get all transactions
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      tags:
+        - transactions
+      x-amazon-apigateway-integration:
+        uri: arn:aws:apigateway:us-west-2:lambda:path/2015-03-31/functions/arn:aws:lambda:us-west-2:917309224575:function:ListAllTransactionsFunction/invocations
+        httpMethod: POST
+        type: aws_proxy
+      responses:
+        200:
+          description: "Successful request"
+          schema:
+            $ref: '#/definitions/Transactions'
+        400:
+          description: "Client-side error"
+        500:
+          description: "Server-side error"
+  /transactions/{startDateSec}/{endDateSec}:
+    options:
+      summary: CORS support
+      description: |
+        Enable CORS by returning correct headers
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      tags:
+        - CORS
+      x-amazon-apigateway-integration:
+        type: mock
+        requestTemplates:
+          application/json: |
+            {
+              "statusCode" : 200
+            }
+        responses:
+          "default":
+            statusCode: "200"
+            responseParameters:
+              method.response.header.Access-Control-Allow-Headers : "'Content-Type,X-Amz-Date,Authorization,X-Api-Key'"
+              method.response.header.Access-Control-Allow-Methods : "'*'"
+              method.response.header.Access-Control-Allow-Origin : "'*'"
+            responseTemplates:
+              application/json: |
+                {}
+      responses:
+        200:
+          description: Default response for CORS method
+          headers:
+            Access-Control-Allow-Headers:
+              type: "string"
+            Access-Control-Allow-Methods:
+              type: "string"
+            Access-Control-Allow-Origin:
+              type: "string"
+    get:
+      parameters:
+        - name: "startDateSec"
+          in: "path"
+          description: "The second representation of the starting date in string"
+          required: true
+          type: "string"
+        - name: "endDateSec"
+          in: "path"
+          description: "The second representation of the ending date in string"
+          required: true
+          type: "string"
+      x-amazon-apigateway-integration:
+        uri: arn:aws:apigateway:us-west-2:lambda:path/2015-03-31/functions/arn:aws:lambda:us-west-2:917309224575:function:ListDateRangeTransactionsFunction/invocations
+        httpMethod: POST
+        type: aws_proxy
+      responses:
+        200:
+          description: "Successful request"
+          schema:
+            $ref: '#/definitions/Transactions'
+        400:
+          description: "Client-side error"
+        500:
+          description: "Server-side error"
+
+#  /balance/{dateSec}:
+#    get:
+#      parameters:
+#        - name: "dateSec"
+#          in: "path"
+#          description: "The second representation of the date in string"
+#          required: true
+#          type: "string"
+#      responses:
+#        200:
+#          description: "Sucessful request"
+#          schema:
+#            $ref: '#/definitions/Balance'
+#        400:
+#          description: "Client-side error"
+#        500:
+#          description: "Server-side error"
+
+
+
+definitions:
+  Transactions:
+    type: "array"
+    items:
+      $ref: "#/definitions/Transaction"
+  Transaction:
+    type: "object"
+    properties:
+      TransactionDateSec:
+        type: "integer"
+        format: "int64"
+      UUID:
+        type: "string"
+      AccountType:
+        type: "string"
+      Amount:
+        type: "number"
+      BankName:
+        type: "string"
+      Description:
+        type: "string"
+      TransactionType:
+        type: "string"
+      UserId:
+        type: "string"
+  Balance:
+    type: "object"
+    properties:
+      DateSec:
+        type: "integer"
+        format: "int64"
+      BankName:
+        type: "string"
+      Balance:
+        type: "number"
+

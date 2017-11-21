@@ -5,16 +5,16 @@
                 <h3 class="card-header">Details</h3>
                 <div class="card-block">
                     <div>
-                        {{ transaction.description }}
+                        {{ transaction['Description'] }}
                     </div>
                     <div>
-                        {{ transaction.amount }}
+                        {{ transaction['Amount'] }}
                     </div>
                     <div>
-                        {{ transaction.type }}
+                        {{ transaction['TransactionType'] }}
                     </div>
                     <div>
-                        {{ transaction.transaction_datetime }}
+                        {{ transaction['TransactionDateTime'] }}
                     </div>
                 </div>
             </div>

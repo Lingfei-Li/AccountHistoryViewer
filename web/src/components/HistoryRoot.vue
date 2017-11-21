@@ -70,7 +70,7 @@ export default {
             console.log("changed route. Id:", this.$route.params.id);
             const detailViewTransactionId = this.$route.params.id;
             const transactionDataWithId = this.$store.state.transactionData.filter(function(item) {
-                return detailViewTransactionId === item.id;
+                return detailViewTransactionId === item['UUID'];
             });
             if(transactionDataWithId.length > 1) {
                 console.warn("When updating detail view ID, found more than one transaction data with Id " + detailViewTransactionId);
@@ -86,9 +86,10 @@ export default {
     methods: {
         processRawTransactionData(transactionData) {
             this.$store.state.transactionData = transactionData;
+            console.log(this.$store.state.transactionData);
 
             this.$store.state.transactionData = this.$store.state.transactionData.map(h => {
-                h.transaction_datetime = toMomentDateTime(parseInt(h.transaction_date_sec));
+                h['TransactionDateTime'] = toMomentDateTime(h['TransactionDateSec']);
                 return h;
             });
         },
@@ -96,13 +97,17 @@ export default {
             let startDateSec = moment().subtract(1, 'months').unix();
             axios.get(`${config.api.transactions}/${startDateSec}/0`)
                 .then(response => {
-                    this.processRawTransactionData(response.data.history);
+                    console.log(response.data);
+                    console.log(response.data.transactions);
+                    this.processRawTransactionData(response.data.transactions);
                 });
         },
         updateHistoryRangeDate(startDateSec, endDateSec) {
             axios.get(`${config.api.transactions}/${startDateSec}/${endDateSec}`)
                 .then(response => {
-                    this.processRawTransactionData(response.data.history);
+                    console.log(response.data);
+                    console.log(response.data.transactions);
+                    this.processRawTransactionData(response.data.transactions);
                 })
                 .catch(error => {
                     console.log(error);
@@ -113,7 +118,15 @@ export default {
             this.updateHistoryRangeDate(moment().subtract(period, number).unix(), 0);
         },
         updateRangeDateGetAll() {
-            this.updateHistoryRangeDate(0, 0);
+            axios.get(`${config.api.transactions}`)
+                .then(response => {
+                    console.log(response.data);
+                    console.log(response.data.transactions);
+                    this.processRawTransactionData(response.data.transactions);
+                })
+                .catch(error => {
+                    console.log(error);
+                });
         },
     },
     mounted() {

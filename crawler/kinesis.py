@@ -35,14 +35,15 @@ def put_transactions(transactions):
 # Testing: put a mock record to the kinesis stream
 if __name__ == '__main__':
     data_cnt = 10
-    uuid_base = int(datetime.datetime(2020, 8, 2).timestamp())
     uuid_base_time = int(time.time())
+    uuid_base = uuid_base_time
+    # uuid_base = int(datetime.datetime(2020, 8, 2).timestamp())
     transaction_date_sec = int(datetime.datetime(2020, 8, 2).timestamp())
     mock_transactions = []
     for i in range(data_cnt):
-        trans = Transaction(TransactionDateSec=transaction_date_sec, UUID='UUID-'+str(uuid_base+i), UserId='UserId-1234',
-                            AccountType='AccountType-checking', Amount=1, BankName='chase',
-                            Description='Description-something', TransactionType='TransactionType-debit')
+        trans = Transaction(TransactionDateSec=transaction_date_sec, UUID='UUID-'+str(uuid_base+i),
+                            UserId='UserId-1234', AccountType='checking', Amount=i, BankName='chase',
+                            Description='Description-something-'+str(i), TransactionType='debit')
         mock_transactions.append(trans)
     put_response = put_transactions(mock_transactions)
     if put_response['FailedRecordCount'] != 0:

@@ -15,24 +15,24 @@ function makeBalanceData(transactions) {
     let transactionsCopy = transactions.slice(0);    // Make a clone of history array
     // Sort transaction by date
     transactionsCopy.sort((a, b) => {
-        return a.transaction_date_sec - b.transaction_date_sec;
+        return a['TransactionDateSec'] - b['TransactionDateSec'];
     });
     let curBal= 0.0;
-    let curDatetime = transactionsCopy[0].transaction_datetime;
+    let curDatetime = transactionsCopy[0]['TransactionDateTime'];
     let balanceData= [];
     let transactionPerDay = [];
     transactionsCopy.forEach(h => {
-        if(!h.transaction_datetime.isSame(curDatetime)) {
-            balanceData.push({x: curDatetime.toDate(), y: curBal, toolTip: makeToolTip(transactionPerDay, curDatetime), account: h.account});
+        if(!h['TransactionDateTime'].isSame(curDatetime)) {
+            balanceData.push({x: curDatetime.toDate(), y: curBal, toolTip: makeToolTip(transactionPerDay, curDatetime), account: h['AccountType']});
 
-            curDatetime = h.transaction_datetime;
+            curDatetime = h['TransactionDateTime'];
             transactionPerDay = [];
         }
-        curBal += parseFloat(h.amount.replace('−', '-'));
+        curBal += h['Amount'];
         transactionPerDay.push(h);
     });
     balanceData.push({x: curDatetime.toDate(), y: curBal, toolTip: makeToolTip(transactionPerDay, curDatetime),
-        account: transactionsCopy[transactionsCopy.length-1].account});
+        account: transactionsCopy[transactionsCopy.length-1]['AccountType']});
     return balanceData;
 }
 
@@ -52,9 +52,9 @@ function makeToolTip(historyList, cur_datetime) {
     let toolTipContent = {"checking": "", 'savings': '', 'others': ''};
     historyList.forEach((h) => {
         const str = "<br/><a href='#{2}' title='{1}'>{0}</a>"
-            .format(h.amount, h.description, h.id);
-        if(h.account === 'checking' || h.account === 'savings') {
-            toolTipContent[h.account] += str;
+            .format(h['Amount'], h['Description'], h['UUID']);
+        if(h['AccountType'] === 'checking' || h['AccountType'] === 'savings') {
+            toolTipContent[h['AccountType']] += str;
         }
         else {
             toolTipContent['others'] += str;

@@ -98,16 +98,19 @@ Resources:
           ACCOUNT_MONTHLY_BALANCE_TABLE:
             Ref: AccountMonthlyBalanceTableName
 
+
   ListAllTransactionsFunction:
     Type: AWS::Serverless::Function
     Properties:
       FunctionName: ListAllTransactionsFunction
-      Handler: transactions.list
+      Handler: transactions.getAll
       Runtime: nodejs6.10
       Events:
         ListAllTransactions:
           Type: Api
           Properties:
+            RestApiId:
+              Ref: ProjectEreborApi
             Path: /transactions
             Method: get
       Policies:
@@ -121,13 +124,15 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       FunctionName: ListDateRangeTransactionsFunction
-      Handler: transactions.listBetweenDates
+      Handler: transactions.getBetweenDates
       Runtime: nodejs6.10
       Events:
         ListDateRange:
           Type: Api
           Properties:
-            Path: /transactions/{startDateSecStr}/{endDateSecStr}
+            RestApiId:
+              Ref: ProjectEreborApi
+            Path: /transactions/{startDateSec}/{endDateSec}
             Method: get
       Policies:
         - AmazonDynamoDBReadOnlyAccess
@@ -213,3 +218,9 @@ Resources:
         ReadCapacityUnits: "5"
         WriteCapacityUnits: "5"
 
+  ProjectEreborApi:
+    Type: AWS::Serverless::Api
+    Properties:
+      Name: ProjecEreborApi
+      StageName: prod
+      DefinitionUri: swagger.yml

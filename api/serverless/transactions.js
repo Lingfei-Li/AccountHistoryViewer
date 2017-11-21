@@ -10,6 +10,12 @@ const LAST_TRANSACTION_DATE_TABLE = process.env.LAST_TRANSACTION_DATE_TABLE;
 
 const dynamodb = new AWS.DynamoDB.DocumentClient();
 
+const CORS_HEADERS = {
+    "Access-Control-Allow-Headers": "Content-Type,Authorization,X-Amz-Date,X-Api-Key,X-Amz-Security-Token",
+    "Access-Control-Allow-Methods": "DELETE,GET,HEAD,OPTIONS,PATCH,POST,PUT",
+    "Access-Control-Allow-Origin": "*"
+};
+
 /*
 * 1. Read transaction data from Kinesis stream
 * 2. Check against the last transaction date and filter out outdated transactions
@@ -139,20 +145,10 @@ exports.processTransactionDataStream = (event, context, callback) => {
             }
         });
     }
-
-    // dynamodb.put(params).promise().then(function(data) {
-    //     console.log("Data successfully put in table: ");
-    //     console.log(JSON.stringify(data, null, 2));
-    // }).catch(function(err) {
-    //     console.error("Failed to put the data: ");
-    //     console.error(JSON.stringify(params.Item, null, 2));
-    //     console.error("error:\n", err);
-    // });
-
     callback(null, `Successfully processed ${event.Records.length} records.`);
 };
 
-exports.list = (event, context, callback) => {
+exports.getAll = (event, context, callback) => {
     console.log("account transactions table name: ", TRANSACTIONS_TABLE);
     const params = {
         TableName: TRANSACTIONS_TABLE,
@@ -161,44 +157,25 @@ exports.list = (event, context, callback) => {
             '#_UUID': 'UUID',
         },
     };
-    dynamodb.scan(params).promise().then(function(data) {
-        const response = {
-            statusCode: 200,
-            headers: {
-                "Access-Control-Allow-Headers": "Content-Type,Authorization,X-Amz-Date,X-Api-Key,X-Amz-Security-Token",
-                "Access-Control-Allow-Methods": "DELETE,GET,HEAD,OPTIONS,PATCH,POST,PUT",
-                "Access-Control-Allow-Origin": "*"
-            },
-            body: JSON.stringify({
-                transactions: data.Items
-            }),
-        };
-        return callback(null, response);
-    }).catch(function(err) {
-        return callback(internalErrorResponse(err));
+    dynamodb.scan(params, function(err, data) {
+        if(err) {
+            callback(internalErrorResponse(err));
+        } else {
+            callback(null, successResponseWithTransactions(data.Items));
+        }
     });
 };
 
-exports.listBetweenDates = (event, context, callback) => {
+exports.getBetweenDates = (event, context, callback) => {
     console.log(event);
-    let startDateSec = parseInt(event.pathParameters.startDateSecStr);
-    let endDateSec = parseInt(event.pathParameters.endDateSecStr);
+    let startDateSec = parseInt(event.pathParameters.startDateSec);
+    let endDateSec = parseInt(event.pathParameters.endDateSec);
     if(endDateSec <= startDateSec) {
         endDateSec = moment().unix();
     }
     if(isNaN(startDateSec) || isNaN(endDateSec)) {
-        const response = {
-            statusCode: 400,
-            headers: {
-                "Access-Control-Allow-Headers": "Content-Type,Authorization,X-Amz-Date,X-Api-Key,X-Amz-Security-Token",
-                "Access-Control-Allow-Methods": "DELETE,GET,HEAD,OPTIONS,PATCH,POST,PUT",
-                "Access-Control-Allow-Origin": "*"
-            },
-            body: JSON.stringify({
-                message: "Path parameters missing or they cannot be converted to integer"
-            }),
-        };
-        return callback(null, response);
+        callback(clientErrorResponse("Path parameters missing or they cannot be converted to integer"));
+        return;
     }
 
     const params = {
@@ -213,43 +190,29 @@ exports.listBetweenDates = (event, context, callback) => {
             ':endDateSec': endDateSec,
         }
     };
-    dynamodb.scan(params, onScan).promise().then(function(data) {
-        const response = {
-            statusCode: 200,
-            headers: {
-                "Access-Control-Allow-Headers": "Content-Type,Authorization,X-Amz-Date,X-Api-Key,X-Amz-Security-Token",
-                "Access-Control-Allow-Methods": "DELETE,GET,HEAD,OPTIONS,PATCH,POST,PUT",
-                "Access-Control-Allow-Origin": "*"
-            },
-            body: JSON.stringify({
-                transactions: data.Items
-            }),
-        };
-        return callback(null, response);
-    }).then(function(err) {
-        const response = {
-            statusCode: 500,
-            headers: {
-                "Access-Control-Allow-Headers": "Content-Type,Authorization,X-Amz-Date,X-Api-Key,X-Amz-Security-Token",
-                "Access-Control-Allow-Methods": "DELETE,GET,HEAD,OPTIONS,PATCH,POST,PUT",
-                "Access-Control-Allow-Origin": "*"
-            },
-            body: JSON.stringify({
-                error: err
-            }),
-        };
-        return callback(null, response);
+    dynamodb.scan(params, function(err, data) {
+        if(err) {
+            callback(internalErrorResponse(err));
+        } else {
+            callback(null, successResponseWithTransactions(data.Items));
+        }
     });
 };
+
+function clientErrorResponse(err) {
+    return {
+        statusCode: 400,
+        headers: CORS_HEADERS,
+        body: JSON.stringify({
+            error: err
+        }),
+    };
+}
 
 function internalErrorResponse(err) {
     return {
         statusCode: 500,
-        headers: {
-            "Access-Control-Allow-Headers": "Content-Type,Authorization,X-Amz-Date,X-Api-Key,X-Amz-Security-Token",
-            "Access-Control-Allow-Methods": "DELETE,GET,HEAD,OPTIONS,PATCH,POST,PUT",
-            "Access-Control-Allow-Origin": "*"
-        },
+        headers: CORS_HEADERS,
         body: JSON.stringify({
             error: err
         }),
@@ -260,13 +223,21 @@ function internalErrorResponse(err) {
 function successResponse(msg) {
     return {
         statusCode: 200,
-        headers: {
-            "Access-Control-Allow-Headers": "Content-Type,Authorization,X-Amz-Date,X-Api-Key,X-Amz-Security-Token",
-            "Access-Control-Allow-Methods": "DELETE,GET,HEAD,OPTIONS,PATCH,POST,PUT",
-            "Access-Control-Allow-Origin": "*"
-        },
+        headers: CORS_HEADERS,
         body: JSON.stringify({
             message: msg
-        }),
+        })
     };
 }
+
+function successResponseWithTransactions(transactions) {
+    return {
+        statusCode: 200,
+        headers: CORS_HEADERS,
+        body: JSON.stringify({
+            transactions: transactions
+        })
+    };
+}
+
+

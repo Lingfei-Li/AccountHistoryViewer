@@ -17,12 +17,20 @@ cfnTemplateSrcPath = os.path.join('.', config['DevelopmentDir'],
                                        config['CloudFormationTemplateFilename'])
 
 cfnTemplateDeployPath = os.path.join('.', config['DevelopmentDir'],
-                                          config['CloudFormationTemplateFilename'])
+                                       config['CloudFormationTemplateFilename'])
+
+swaggerSrcPath = os.path.join('.', config['DevelopmentDir'],
+                                       config['CloudFormationTemplateDir'],
+                                       config['SwaggerFilename'])
+
+swaggerDeployPath = os.path.join('.', config['DevelopmentDir'],
+                                      config['SwaggerFilename'])
 
 outputTemplatePath = os.path.join('.', config['DevelopmentDir'],
                                        config['OutputTemplateFilename'])
 
 shutil.copy(cfnTemplateSrcPath, cfnTemplateDeployPath)
+shutil.copy(swaggerSrcPath, swaggerDeployPath)
 
 
 try:
@@ -37,8 +45,8 @@ try:
                     config["LastTransactionDateTableName"],
                     config["AccountDailyBalanceTableName"],
                     config["AccountMonthlyBalanceTableName"]], shell=True, check=True)
-    subprocess.run(["scripts\clean.bat",
-                    config["DeploymentBucketName"]], shell=True, check=True)
+    # subprocess.run(["scripts\clean.bat",
+    #                 config["DeploymentBucketName"]], shell=True, check=True)
 
     print(Fore.GREEN + "Serverless Deployment completed")
 
