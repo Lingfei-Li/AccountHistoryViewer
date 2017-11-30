@@ -54,7 +54,7 @@ class ChaseCrawler(BankCrawler):
                 try:
                     date_sec = convert_to_date_sec(date_str[i].text, "%b %d, %Y")
                 except ValueError:
-                    print("Cannot parse date: ", date_str[i].text)
+                    print("Cannot parse date: ", date_str[i].text, ", skipping")
                     continue
 
                 newTransaction = Transaction(TransactionDateSec=date_sec, UUID=str(uuid1()), UserId="lingfei",
@@ -78,7 +78,7 @@ class ChaseCrawler(BankCrawler):
 class USBankCrawler(BankCrawler):
     def __init__(self, username, password, questions):
         chromeOptions = webdriver.ChromeOptions()
-        prefs = {"download.default_directory": "D:\\"}
+        prefs = {"download.default_directory": r"C:\Users\lingfl\Downloads\ProjectEreborDownload"}
         chromeOptions.add_experimental_option("prefs", prefs)
         chromedriver = "browser_drivers/chromedriver.exe"
         driver = webdriver.Chrome(executable_path=chromedriver, chrome_options=chromeOptions)
@@ -125,10 +125,10 @@ class USBankCrawler(BankCrawler):
                     date_sec = convert_to_date_sec(date_str, "%m/%d/%Y")
                 except ValueError:
                     if date_str != 'Date':
-                        print("Cannot parse date: ", date_str)
+                        print("Cannot parse date: ", date_str, ", skipping")
                     continue
 
-                new_transaction = Transaction(TransactionDateSec=date_sec, UUID=str(uuid1), UserId="lingfei",
+                new_transaction = Transaction(TransactionDateSec=date_sec, UUID=str(uuid1()), UserId="lingfei",
                                               AccountType=account, Amount=convert_money_to_float(amount),
                                               BankName='USBank', Description=description,
                                               TransactionType=type)
@@ -137,28 +137,40 @@ class USBankCrawler(BankCrawler):
         return transactions
 
     def read_csv_then_delete(self, account):
+        print("Reading csv for", account)
         if account == 'checking':
-            filepath = 'D:\\export.csv'
+            filepath = r'C:\Users\lingfl\Downloads\ProjectEreborDownload\export.csv'
         else:
-            filepath = 'D:\\export (1).csv'
+            filepath = r'C:\Users\lingfl\Downloads\ProjectEreborDownload\export (1).csv'
         transactions = self.readCSV(account, filepath)
         os.remove(filepath)
         return transactions
 
     def start_extraction(self):
         # Checking account
+        print("Downloading checking account transactions")
         self.driver.find_element_by_css_selector("#DepositAccountsTable > tbody > "
                                                  "tr.padded-row.trx_greyArea_odd > td.accountRowFirst > a").click()
         self.driver.find_element_by_css_selector("#DownloadTransactionsLink > a").click()
+        time.sleep(1)
         self.driver.find_element_by_css_selector("#FromDateInput").clear()
+        time.sleep(1)
         self.driver.find_element_by_css_selector("#FromDateInput").send_keys("08/01/2015")
+        time.sleep(1)
         self.driver.execute_script("ExportDownloadTransactions()")
+        print("checking account transactions downloaded")
+        time.sleep(2)
 
         # Savings account
+        print("Downloading saving account transactions")
         self.driver.find_element_by_css_selector("#AccountDDL-button > a").click()
+        time.sleep(1)
         self.driver.find_element_by_css_selector("#AccountDDL-menu > li.ui-corner-bottom > a").click()
+        time.sleep(1)
         self.driver.find_element_by_css_selector("#FromDateInput").clear()
+        time.sleep(1)
         self.driver.find_element_by_css_selector("#FromDateInput").send_keys("08/01/2015")
+        time.sleep(1)
         self.driver.execute_script("ExportDownloadTransactions()")
 
         # Wait for downloading to complete

@@ -114,7 +114,6 @@ exports.processTransactionDataStream = (event, context, callback) => {
                                 return callback(internalErrorResponse(err));
                             } else {
                                 console.log("Successfully put transactions to DynamoDB");
-
                             }
                         });
                     }

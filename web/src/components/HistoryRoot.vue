@@ -95,7 +95,7 @@ export default {
         },
         initOneMonthHistory() {
             let startDateSec = moment().subtract(1, 'months').unix();
-            axios.get(`${config.api.transactions}/${startDateSec}/0`)
+            axios.get(`${config.api.root}/${config.api.transactions}/${startDateSec}/0`)
                 .then(response => {
                     console.log(response.data);
                     console.log(response.data.transactions);
@@ -103,7 +103,7 @@ export default {
                 });
         },
         updateHistoryRangeDate(startDateSec, endDateSec) {
-            axios.get(`${config.api.transactions}/${startDateSec}/${endDateSec}`)
+            axios.get(`${config.api.root}/${config.api.transactions}/${startDateSec}/${endDateSec}`)
                 .then(response => {
                     console.log(response.data);
                     console.log(response.data.transactions);
@@ -118,7 +118,7 @@ export default {
             this.updateHistoryRangeDate(moment().subtract(period, number).unix(), 0);
         },
         updateRangeDateGetAll() {
-            axios.get(`${config.api.transactions}`)
+            axios.get(`${config.api.root}/${config.api.transactions}`)
                 .then(response => {
                     console.log(response.data);
                     console.log(response.data.transactions);

@@ -24,13 +24,18 @@ def put_transactions(transactions):
 
     records = []
     for t in transactions:
-        log.plain("{}".format("{} {}".format(t.getField('Amount'), t.getField('Description'))))
+        # log.plain("{}".format("{} {}".format(t.getField('Amount'), t.getField('Description'))))
         records.append({
             'Data': json.dumps(t.getItem()),
             'PartitionKey': t.getField('UUID')
         })
 
-    return kinesis_client.put_records(StreamName=stream_name, Records=records)
+    records_block = 100
+    start_pos = 0
+    while start_pos < len(records):
+        end_pos = min(start_pos + records_block, len(records) - 1)
+        kinesis_client.put_records(StreamName=stream_name, Records=records[start_pos:end_pos])
+        start_pos += records_block
 
 # Testing: put a mock record to the kinesis stream
 if __name__ == '__main__':
@@ -45,10 +50,7 @@ if __name__ == '__main__':
                             UserId='UserId-1234', AccountType='checking', Amount=i, BankName='chase',
                             Description='Description-something-'+str(i), TransactionType='debit')
         mock_transactions.append(trans)
-    put_response = put_transactions(mock_transactions)
-    if put_response['FailedRecordCount'] != 0:
-        log.error("Failed to put record to Kinesis. Message: ", put_response)
-    else:
-        log.success("Successfully put {} records to Kinesis".format(data_cnt))
+    put_transactions(mock_transactions)
+    print("Put records to Kinesis completed")
 
 
