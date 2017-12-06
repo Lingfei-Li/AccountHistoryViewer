@@ -11,27 +11,25 @@ init()
 
 print(Fore.CYAN + "Copying CloudFormation template file to deployment directory")
 
-
 cfnTemplateSrcPath = os.path.join('.', config['DevelopmentDir'],
-                                       config['CloudFormationTemplateDir'],
-                                       config['CloudFormationTemplateFilename'])
+                                  config['CloudFormationTemplateDir'],
+                                  config['CloudFormationTemplateFilename'])
 
 cfnTemplateDeployPath = os.path.join('.', config['DevelopmentDir'],
-                                       config['CloudFormationTemplateFilename'])
+                                     config['DeploymentFilePrefix'] + config['CloudFormationTemplateFilename'])
 
 swaggerSrcPath = os.path.join('.', config['DevelopmentDir'],
-                                       config['CloudFormationTemplateDir'],
-                                       config['SwaggerFilename'])
+                              config['CloudFormationTemplateDir'],
+                              config['SwaggerFilename'])
 
 swaggerDeployPath = os.path.join('.', config['DevelopmentDir'],
-                                      config['SwaggerFilename'])
+                                 config['SwaggerFilename'])
 
 outputTemplatePath = os.path.join('.', config['DevelopmentDir'],
-                                       config['OutputTemplateFilename'])
+                                  config['DeploymentFilePrefix'] + config['OutputTemplateFilename'])
 
 shutil.copy(cfnTemplateSrcPath, cfnTemplateDeployPath)
 shutil.copy(swaggerSrcPath, swaggerDeployPath)
-
 
 try:
     subprocess.run(["scripts\package.bat",
@@ -56,13 +54,14 @@ try:
         os.remove(cfnTemplateDeployPath)
     if os.path.exists(outputTemplatePath):
         os.remove(outputTemplatePath)
+    if os.path.exists(swaggerDeployPath):
+        os.remove(swaggerDeployPath)
 except subprocess.CalledProcessError as e:
-    out_bytes = e.output       # Output generated before error
-    code      = e.returncode   # Return code
+    out_bytes = e.output  # Output generated before error
+    code = e.returncode  # Return code
     print(out_bytes)
     print(code)
     print(Fore.RED + "Deployment Failed")
     exit(0)
-
 
 print(Fore.GREEN + "Deployment Succeeded")

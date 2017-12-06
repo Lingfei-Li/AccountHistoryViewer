@@ -16,19 +16,34 @@ Parameters:
     Description: The name of the account monthly balance table
     Type: String
 
+Outputs:
+  APIEndpoint:
+    Description: The endpoint of the API Gateway's prod stage
+    Value:
+      Fn::Sub:
+        - https://${restapi_id}.execute-api.${region}.amazonaws.com/${stage_name}/
+        - region: us-west-2
+          stage_name: prod
+          restapi_id:
+            Ref: ProjectEreborApi
+    Export:
+      Name: ProjectEreborAPIEndpoint
+
 
 Resources:
+  # Kinesis Stream
   TransactionDataStream:
     Type: AWS::Kinesis::Stream
     Properties:
       Name: TransactionDataStream
       ShardCount: 1
 
+  # Stream Processors
   TransactionDataStreamProcessor:
     Type: AWS::Serverless::Function
     Properties:
-      FunctionName: TransactionDataStreamProcessor
-      Handler: transactions.processTransactionDataStream
+      FunctionName: ProjectErebor-TransactionDataStreamProcessor
+      Handler: streamProcessors.processTransactionData
       Timeout: 10
       Runtime: nodejs6.10
       Events:
@@ -53,8 +68,8 @@ Resources:
   DailyBalanceStreamProcessor:
     Type: AWS::Serverless::Function
     Properties:
-      FunctionName: DailyBalanceStreamProcessor
-      Handler: balance.updateDailyBalance
+      FunctionName: ProjectErebor-DailyBalanceStreamProcessor
+      Handler: streamProcessors.updateDailyBalance
       Timeout: 10
       Runtime: nodejs6.10
       Events:
@@ -77,8 +92,8 @@ Resources:
   MonthlyBalanceStreamProcessor:
     Type: AWS::Serverless::Function
     Properties:
-      FunctionName: MonthlyBalanceStreamProcessor
-      Handler: balance.updateMonthlyBalance
+      FunctionName: ProjectErebor-MonthlyBalanceStreamProcessor
+      Handler: streamProcessors.updateMonthlyBalance
       Timeout: 10
       Runtime: nodejs6.10
       Events:
@@ -98,12 +113,12 @@ Resources:
           ACCOUNT_MONTHLY_BALANCE_TABLE:
             Ref: AccountMonthlyBalanceTableName
 
-
+  ## API Lambdas
   ListAllTransactionsFunction:
     Type: AWS::Serverless::Function
     Properties:
-      FunctionName: ListAllTransactionsFunction
-      Handler: transactions.getAll
+      FunctionName: ProjectErebor-ListAllTransactionsFunction
+      Handler: apiLambdas.getAllTransactions
       Runtime: nodejs6.10
       Events:
         ListAllTransactions:
@@ -123,8 +138,8 @@ Resources:
   ListDateRangeTransactionsFunction:
     Type: AWS::Serverless::Function
     Properties:
-      FunctionName: ListDateRangeTransactionsFunction
-      Handler: transactions.getBetweenDates
+      FunctionName: ProjectErebor-ListDateRangeTransactionsFunction
+      Handler: apiLambdas.getTransactionsBetweenDates
       Runtime: nodejs6.10
       Events:
         ListDateRange:
@@ -141,7 +156,32 @@ Resources:
           ACCOUNT_TRANSACTIONS_TABLE_NAME:
             Ref: AccountTransactionsTableName
 
+  GetBalanceForDateFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: ProjectErebor-GetBalanceForDateFunction
+      Handler: apiLambdas.getBalanceForDate
+      Runtime: nodejs6.10
+      Events:
+        GetBalanceForDate:
+          Type: Api
+          Properties:
+            RestApiId:
+              Ref: ProjectEreborApi
+            Path: /balance/date/{dateSec}
+            Method: get
+      Policies:
+        - AmazonDynamoDBReadOnlyAccess
+      Environment:
+        Variables:
+          ACCOUNT_TRANSACTIONS_TABLE_NAME:
+            Ref: AccountTransactionsTableName
+          ACCOUNT_DAILY_BALANCE_TABLE:
+            Ref: AccountDailyBalanceTableName
+          ACCOUNT_MONTHLY_BALANCE_TABLE:
+            Ref: AccountMonthlyBalanceTableName
 
+  # DynamoDB Tables
   AccountTransactionsTable:
     Type: "AWS::DynamoDB::Table"
     Properties:
@@ -218,6 +258,7 @@ Resources:
         ReadCapacityUnits: "5"
         WriteCapacityUnits: "5"
 
+  # API Gateway
   ProjectEreborApi:
     Type: AWS::Serverless::Api
     Properties:

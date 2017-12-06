@@ -1,0 +1,15 @@
+{
+  "AccountTransactionsTableName": "ProjectErebor-Transactions",
+  "AccountDailyBalanceTableName": "ProjectErebor-DailyBalance",
+  "AccountMonthlyBalanceTableName": "ProjectErebor-MonthlyBalance",
+  "LastTransactionDateTableName": "ProjectErebor-LastTransactionDate",
+  "TransactionDataStreamName": "TransactionDataStream",
+  "DeploymentBucketName": "project-erebor-deployment",
+  "StackName": "ProjectErebor",
+  "DevelopmentDir": "serverless",
+  "DeploymentFilePrefix": "deploy_",
+  "CloudFormationTemplateDir": "cloudFormation",
+  "CloudFormationTemplateFilename": "template.yml",
+  "SwaggerFilename": "swagger.yml",
+  "OutputTemplateFilename": "serverless-output.yml"
+}

@@ -64,7 +64,7 @@ paths:
       tags:
         - transactions
       x-amazon-apigateway-integration:
-        uri: arn:aws:apigateway:us-west-2:lambda:path/2015-03-31/functions/arn:aws:lambda:us-west-2:917309224575:function:ListAllTransactionsFunction/invocations
+        uri: arn:aws:apigateway:us-west-2:lambda:path/2015-03-31/functions/arn:aws:lambda:us-west-2:917309224575:function:ProjectErebor-ListAllTransactionsFunction/invocations
         httpMethod: POST
         type: aws_proxy
       responses:
@@ -127,7 +127,7 @@ paths:
           required: true
           type: "string"
       x-amazon-apigateway-integration:
-        uri: arn:aws:apigateway:us-west-2:lambda:path/2015-03-31/functions/arn:aws:lambda:us-west-2:917309224575:function:ListDateRangeTransactionsFunction/invocations
+        uri: arn:aws:apigateway:us-west-2:lambda:path/2015-03-31/functions/arn:aws:lambda:us-west-2:917309224575:function:ProjectErebor-ListDateRangeTransactionsFunction/invocations
         httpMethod: POST
         type: aws_proxy
       responses:
@@ -140,25 +140,69 @@ paths:
         500:
           description: "Server-side error"
 
-#  /balance/{dateSec}:
-#    get:
-#      parameters:
-#        - name: "dateSec"
-#          in: "path"
-#          description: "The second representation of the date in string"
-#          required: true
-#          type: "string"
-#      responses:
-#        200:
-#          description: "Sucessful request"
-#          schema:
-#            $ref: '#/definitions/Balance'
-#        400:
-#          description: "Client-side error"
-#        500:
-#          description: "Server-side error"
-
-
+  /balance/date/{dateSec}:
+    options:
+      summary: CORS support
+      description: |
+        Enable CORS by returning correct headers
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      tags:
+        - CORS
+      x-amazon-apigateway-integration:
+        type: mock
+        requestTemplates:
+          application/json: |
+            {
+              "statusCode" : 200
+            }
+        responses:
+          "default":
+            statusCode: "200"
+            responseParameters:
+              method.response.header.Access-Control-Allow-Headers : "'Content-Type,X-Amz-Date,Authorization,X-Api-Key'"
+              method.response.header.Access-Control-Allow-Methods : "'*'"
+              method.response.header.Access-Control-Allow-Origin : "'*'"
+            responseTemplates:
+              application/json: |
+                {}
+      responses:
+        200:
+          description: Default response for CORS method
+          headers:
+            Access-Control-Allow-Headers:
+              type: "string"
+            Access-Control-Allow-Methods:
+              type: "string"
+            Access-Control-Allow-Origin:
+              type: "string"
+    get:
+      parameters:
+        - name: "bankName"
+          in: "path"
+          description: "The bank name to calculate the balance for"
+          required: true
+          type: "string"
+        - name: "dateSec"
+          in: "path"
+          description: "The second representation of the date in string"
+          required: true
+          type: "string"
+      x-amazon-apigateway-integration:
+        uri: arn:aws:apigateway:us-west-2:lambda:path/2015-03-31/functions/arn:aws:lambda:us-west-2:917309224575:function:ProjectErebor-GetBalanceForDateFunction/invocations
+        httpMethod: POST
+        type: aws_proxy
+      responses:
+        200:
+          description: "Successful request"
+          schema:
+            $ref: '#/definitions/BalancePerBank'
+        400:
+          description: "Client-side error"
+        500:
+          description: "Server-side error"
 
 definitions:
   Transactions:
@@ -185,6 +229,10 @@ definitions:
         type: "string"
       UserId:
         type: "string"
+  BalancePerBank:
+    type: "object"
+    additionalProperties:
+      $ref: "#/definitions/Balance"
   Balance:
     type: "object"
     properties:
