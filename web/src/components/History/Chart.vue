@@ -10,20 +10,20 @@
 <script>
 
 
-function makeBalanceData(transactions) {
+function makeBalanceData(transactions, startingBalance) {
     if(transactions.length <= 0) return [];
     let transactionsCopy = transactions.slice(0);    // Make a clone of history array
     // Sort transaction by date
     transactionsCopy.sort((a, b) => {
         return a['TransactionDateSec'] - b['TransactionDateSec'];
     });
-    let curBal= 0.0;
+    let curBal = startingBalance;
     let curDatetime = transactionsCopy[0]['TransactionDateTime'];
     let balanceData= [];
     let transactionPerDay = [];
     transactionsCopy.forEach(h => {
         if(!h['TransactionDateTime'].isSame(curDatetime)) {
-            balanceData.push({x: curDatetime.toDate(), y: curBal, toolTip: makeToolTip(transactionPerDay, curDatetime), account: h['AccountType']});
+            balanceData.push({x: curDatetime.toDate(), y: curBal, toolTip: makeToolTip(transactionPerDay, curBal, curDatetime), account: h['AccountType']});
 
             curDatetime = h['TransactionDateTime'];
             transactionPerDay = [];
@@ -31,12 +31,12 @@ function makeBalanceData(transactions) {
         curBal += h['Amount'];
         transactionPerDay.push(h);
     });
-    balanceData.push({x: curDatetime.toDate(), y: curBal, toolTip: makeToolTip(transactionPerDay, curDatetime),
+    balanceData.push({x: curDatetime.toDate(), y: curBal, toolTip: makeToolTip(transactionPerDay, curBal, curDatetime),
         account: transactionsCopy[transactionsCopy.length-1]['AccountType']});
     return balanceData;
 }
 
-function makeToolTip(historyList, cur_datetime) {
+function makeToolTip(historyList, curBal, curDatetime) {
     if (!String.prototype.format) {
         String.prototype.format = function() {
             let args = arguments;
@@ -60,7 +60,8 @@ function makeToolTip(historyList, cur_datetime) {
             toolTipContent['others'] += str;
         }
     });
-    let result = `<b>${cur_datetime.format("YYYY-M-D")}</b><br/>`;
+    let result = `<b>${curDatetime.format("YYYY-M-D")}</b><br/>`;
+    result += `<b>Total Balance:</b><br/>${curBal.toFixed(2)}<br/>`;
     if(toolTipContent['checking'] !== '') {
         result += '<b>Checking:</b>' + toolTipContent['checking'];
     }
@@ -106,7 +107,7 @@ export default {
             else {
                 this.note = this.transactionData.length + " transactions";
             }
-            this.balanceData = makeBalanceData(this.transactionData);
+            this.balanceData = makeBalanceData(this.transactionData, this.$store.state.totalBalanceForFirstDate);
             this.chart.options.data[0].dataPoints = this.balanceData;
             this.chart.render();
         }

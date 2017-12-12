@@ -84,33 +84,51 @@ export default {
         }
     },
     methods: {
+        setupBalanceData(transactionData) {
+            if(transactionData.length === 0) return;
+            const firstDate = transactionData[0]['TransactionDateSec'];
+            let balance = {};
+            let totalBalance = 0;
+            axios.get(`${config.api.root}/${config.api.balance.root}/${config.api.balance.date}/${firstDate}`).then(response => {
+                const balancePerBank = response.data.balancePerBank;
+                let totalBalance = 0;
+                for(const bank in balancePerBank) if(balancePerBank.hasOwnProperty(bank)) {
+                    totalBalance += balancePerBank[bank];
+                }
+                this.$store.state.totalBalanceForFirstDate = totalBalance;
+            }).catch(error => {
+                console.error(error);
+            });
+        },
         processRawTransactionData(transactionData) {
-            this.$store.state.transactionData = transactionData;
-            console.log(this.$store.state.transactionData);
-
-            this.$store.state.transactionData = this.$store.state.transactionData.map(h => {
+            let processedTransactionData = transactionData;
+            processedTransactionData = processedTransactionData.map(h => {
                 h['TransactionDateTime'] = toMomentDateTime(h['TransactionDateSec']);
                 return h;
             });
+
+            processedTransactionData.sort((a, b) => {
+                return a['TransactionDateSec'] - b['TransactionDateSec'];
+            });
+
+            this.setupBalanceData(transactionData);
+
+            this.$store.state.transactionData = transactionData;
         },
         initOneMonthHistory() {
             let startDateSec = moment().subtract(1, 'months').unix();
             axios.get(`${config.api.root}/${config.api.transactions}/${startDateSec}/0`)
                 .then(response => {
-                    console.log(response.data);
-                    console.log(response.data.transactions);
                     this.processRawTransactionData(response.data.transactions);
                 });
         },
         updateHistoryRangeDate(startDateSec, endDateSec) {
             axios.get(`${config.api.root}/${config.api.transactions}/${startDateSec}/${endDateSec}`)
                 .then(response => {
-                    console.log(response.data);
-                    console.log(response.data.transactions);
                     this.processRawTransactionData(response.data.transactions);
                 })
                 .catch(error => {
-                    console.log(error);
+                    console.error(error);
                 });
         },
         updateRangeDatePastPresent(period, number) {
@@ -120,18 +138,15 @@ export default {
         updateRangeDateGetAll() {
             axios.get(`${config.api.root}/${config.api.transactions}`)
                 .then(response => {
-                    console.log(response.data);
-                    console.log(response.data.transactions);
                     this.processRawTransactionData(response.data.transactions);
                 })
                 .catch(error => {
-                    console.log(error);
+                    console.error("ERROR", error);
                 });
         },
     },
     mounted() {
         this.initOneMonthHistory();
-        console.log(this.$route);
     }
 }
 </script>
